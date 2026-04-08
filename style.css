@@ -11,162 +11,170 @@ body {
     min-height: 100vh;
 }
 
-/* --- HEADER Y BUSCADOR (Mantenemos tu estilo original) --- */
+/* --- CABECERA FIJA Y COMPACTA --- */
 .header {
     background: linear-gradient(135deg, #FF8C00 0%, #FF6600 50%, #FF4500 100%);
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
-    position: sticky;
+    padding: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    position: sticky; /* Siempre fija */
     top: 0;
-    z-index: 100;
-    border-bottom: 4px solid #000000;
+    z-index: 1000;
+    border-bottom: 3px solid #000000;
 }
 
-.logo-container { text-align: center; margin-bottom: 15px; }
-.logo-image { max-height: 80px; width: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+.logo-container { 
+    text-align: center; 
+    margin-bottom: 10px; 
+}
+
+.logo-image { 
+    max-height: 60px; 
+    width: auto; 
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); 
+}
+
+.search-filter-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
 
 .search-input {
     width: 100%;
-    padding: 15px 20px;
-    border: 3px solid #000000;
+    padding: 12px 20px;
+    border: 2px solid #000000;
     border-radius: 50px;
-    background: rgba(255, 255, 255, 0.95);
+    background: white;
     font-weight: 600;
     outline: none;
+    font-size: 0.95em;
 }
 
-.filters-row { display: flex; gap: 15px; margin-top: 15px; }
+.filters-row { 
+    display: flex; 
+    gap: 10px; 
+    margin-top: 10px; 
+}
+
 .filter-select {
     flex: 1;
-    padding: 12px;
+    padding: 10px;
     border-radius: 50px;
-    border: 3px solid #000000;
+    border: 2px solid #000000;
     font-weight: bold;
-    appearance: none;
-    background: white url("data:image/svg+xml...") no-repeat right 15px center/20px;
+    font-size: 0.85em;
+    background: white;
 }
 
-/* --- CONTENEDOR DE TABLA --- */
+/* --- CONTENEDOR DE LISTA --- */
 .table-container {
     max-width: 1200px;
-    margin: 20px auto;
+    margin: 15px auto;
     padding: 0 10px;
 }
 
-.songs-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 8px;
+/* Ocultamos la tabla tradicional en móvil para usar el Grid */
+.songs-table thead { display: none; }
+.songs-table, .songs-table tbody { display: block; width: 100%; }
+
+/* --- DISEÑO DE TARJETAS EN DOS COLUMNAS (Vertical) --- */
+.songs-table tbody {
+    display: grid;
+    grid-template-columns: repeat(2, 1dfr); /* Dos tarjetas por fila */
+    gap: 10px;
 }
 
-/* Ocultar columnas que no quieres mostrar pero que sirven para filtrar */
-.col-language, .col-vocalist, 
-td:nth-child(5), td:nth-child(6) {
-    display: none;
+.songs-table tr {
+    display: flex;
+    flex-direction: column;
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid #FF8C00;
+    border-radius: 12px;
+    padding: 10px;
+    justify-content: space-between;
+    min-height: 160px;
 }
 
-/* --- DISEÑO PARA ESCRITORIO --- */
-@media (min-width: 769px) {
-    .songs-table thead {
-        background: linear-gradient(135deg, #FF8C00 0%, #FF6600 100%);
-    }
-    .songs-table th {
-        padding: 15px;
-        color: black;
-        text-align: left;
-    }
-    .songs-table tbody tr {
-        background: rgba(255, 255, 255, 0.05);
-        transition: 0.3s;
-    }
-    .songs-table td { padding: 15px; }
+/* Ocultamos columnas de info interna */
+td:nth-child(5), td:nth-child(6) { display: none; }
+
+/* Número e ID */
+.songs-table td:nth-child(1) {
+    color: #FF8C00;
+    font-size: 0.9em;
+    font-weight: bold;
 }
 
-/* --- SOLUCIÓN PARA MÓVILES (ESTILO CARDS) --- */
-@media (max-width: 768px) {
-    /* Ocultamos el encabezado de la tabla en móvil */
-    .songs-table thead { display: none; }
+/* Artista */
+.songs-table td:nth-child(2) {
+    color: #FFA500;
+    font-size: 0.85em;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
 
-    .songs-table tbody, .songs-table tr, .songs-table td {
-        display: block;
-        width: 100%;
+/* Título */
+.songs-table td:nth-child(3) {
+    color: #FFFFFF;
+    font-size: 1em;
+    font-weight: 500;
+    line-height: 1.2;
+    margin: 4px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Corta a 2 líneas si es muy largo */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Género */
+.songs-table td:nth-child(4) {
+    color: #999;
+    font-size: 0.75em;
+}
+
+/* Botón de WhatsApp Compacto */
+.songs-table td:last-child {
+    margin-top: 8px;
+}
+
+.songs-table td:last-child a {
+    display: block;
+    background: #25D366;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    padding: 8px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 0.8em;
+}
+
+.songs-table td:last-child a::before {
+    content: 'PEDIR';
+}
+
+/* --- AJUSTES PARA MODO HORIZONTAL (Landscape) --- */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+    .logo-container { display: none; } /* Oculta logo para ganar espacio */
+    
+    .header { padding: 8px 15px; }
+    
+    .filters-row { 
+        margin-top: 5px; 
+        flex-direction: row !important; 
     }
 
-    .songs-table tr {
-        background: rgba(40, 40, 40, 0.9);
-        border: 2px solid #FF8C00;
-        border-radius: 15px;
-        margin-bottom: 15px;
-        padding: 15px;
-        position: relative;
-        box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+    .songs-table tbody {
+        grid-template-columns: repeat(3, 1fr); /* Tres tarjetas por fila para aprovechar el ancho */
     }
+}
 
-    /* Número de la canción (arriba a la izquierda) */
-    .songs-table td:nth-child(1) {
-        color: #FF8C00;
-        font-size: 1.2em;
-        font-weight: bold;
-        padding: 0 0 5px 0;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-
-    /* Artista */
-    .songs-table td:nth-child(2) {
-        color: #FFA500;
-        font-size: 1.1em;
-        font-weight: 700;
-        padding: 8px 0 2px 0;
-        text-transform: uppercase;
-    }
-
-    /* Título de la canción */
-    .songs-table td:nth-child(3) {
-        color: #FFFFFF;
-        font-size: 1.3em;
-        font-weight: 500;
-        padding: 0 0 8px 0;
-    }
-
-    /* Género */
-    .songs-table td:nth-child(4) {
-        color: #FFB732;
-        font-size: 0.9em;
-        font-style: italic;
-        padding: 0;
-    }
-
-    /* BOTÓN DE WHATSAPP (Llamativo y grande) */
-    .songs-table td:last-child {
-        display: block;
-        margin-top: 15px;
-        padding: 0;
-        text-align: center;
-    }
-
-    .songs-table td:last-child a {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #25D366;
-        color: white;
-        text-decoration: none;
-        padding: 12px;
-        border-radius: 10px;
-        font-weight: bold;
-        font-size: 1em;
-        box-shadow: 0 4px 10px rgba(37, 211, 102, 0.4);
-    }
-
-    .songs-table td:last-child a::before {
-        content: 'PEDIR POR WHATSAPP ';
-        margin-right: 10px;
-    }
-
-    /* Ajuste para modo horizontal en móvil */
-    @media (orientation: landscape) and (max-height: 500px) {
-        .logo-container { display: none; }
-        .header { padding: 10px; }
-        .filters-row { margin-top: 5px; }
-    }
+/* Pantallas grandes (PC) - Volvemos a formato tabla normal */
+@media (min-width: 1024px) {
+    .songs-table { display: table; border-spacing: 0; }
+    .songs-table thead { display: table-header-group; }
+    .songs-table tbody { display: table-row-group; }
+    .songs-table tr { display: table-row; background: none; border: none; }
+    .songs-table td { display: table-cell; padding: 15px; border-bottom: 1px solid #333; }
+    .songs-table td:last-child a::before { content: 'PEDIR POR WHATSAPP'; }
 }
