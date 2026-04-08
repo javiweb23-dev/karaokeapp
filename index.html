@@ -1,80 +1,90 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Karaoke Latino</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#FF8C00">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Karaoke Latino</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FF8C00">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
-    <header class="header" id="header">
-        <div class="logo-container">
-            <img src="logo.png" alt="Karaoke Latino" class="logo-image">
-        </div>
-        <div class="search-filter-container">
-            <div class="search-container">
-                <input 
-                    type="text" 
-                    id="searchInput" 
-                    class="search-input" 
-                    placeholder="Buscar por título, artista, número o género..."
-                    autocomplete="off"
-                    autocorrect="off"
-                    autocapitalize="off"
-                    spellcheck="false"
-                >
-            </div>
-            <div class="filters-row">
-                <div class="language-filter">
-                    <select id="languageFilter" class="filter-select">
-                        <option value="todos">Todos los idiomas</option>
-                        <option value="español">Español</option>
-                        <option value="ingles">Inglés</option>
-                        <option value="portugues">Portugués</option>
-                        <option value="frances">Francés</option>
-                        <option value="italiano">Italiano</option>
-                    </select>
-                </div>
-                <div class="vocalist-filter">
-                    <select id="vocalistFilter" class="filter-select">
-                        <option value="todos">Todos los vocalistas</option>
-                        <option value="hombre">Hombre</option>
-                        <option value="mujer">Mujer</option>
-                        <option value="pareja">Pareja</option>
-                    </select>
+  <header class="header" id="header">
+      <div class="logo-container">
+          <img src="logo.png" alt="Karaoke Latino" class="logo-image">
+      </div>
+      <div class="search-filter-container">
+          <div class="search-container">
+              <input 
+                  type="text"
+                  id="searchInput"
+                  class="search-input"
+                  placeholder="Buscar por título, artista, número o género..."
+                  autocomplete="off"
+                  autocorrect="off"
+                  autocapitalize="off"
+                  spellcheck="false"
+              >
+          </div>
+          <div class="filters-row">
+              <div class="language-filter">
+                  <select id="languageFilter" class="filter-select">
+                      <option value="todos">Todos los idiomas</option>
+                      <option value="español">Español</option>
+                      <option value="ingles">Inglés</option>
+                      <option value="portugues">Portugués</option>
+                      <option value="frances">Francés</option>
+                      <option value="italiano">Italiano</option>
+                  </select>
+              </div>
+              <div class="vocalist-filter">
+                  <select id="vocalistFilter" class="filter-select">
+                      <option value="todos">Todos los vocalistas</option>
+                      <option value="hombre">Hombre</option>
+                      <option value="mujer">Mujer</option>
+                      <option value="pareja">Pareja</option>
+                  </select>
                 </div>
             </div>
         </div>
     </header>
 
     <div class="table-container" id="tableContainer">
-        <table class="songs-table">
-            <thead>
-                <tr>
-                    <th class="col-number">#</th>
-                    <th class="col-artist">ARTISTA</th>
-                    <th class="col-song">CANCIÓN</th>
-                    <th class="col-genre">GÉNERO</th>
-                    <th class="col-language">IDIOMA</th>
-                    <th class="col-vocalist">VOCALISTA</th>
-                </tr>
-            </thead>
-            <tbody id="songsTableBody">
-                <!-- Las canciones se cargarán aquí dinámicamente -->
-            </tbody>
-        </table>
-    </div>
+      <table class="songs-table">
+          <thead>
+              <tr>
+                  <th class="col-number">#</th>
+                  <th class="col-artist">ARTISTA</th>
+                  <th class="col-song">CANCIÓN</th>
+                  <th class="col-genre">GÉNERO</th>
+                  <th class="col-language">IDIOMA</th>
+                  <th class="col-vocalist">VOCALISTA</th>
+                  <th style="background-color: #25D366; color: white;">PEDIR</th>
+              </tr>
+          </thead>
+          <tbody id="songsTableBody">
+              </tbody>
+      </table>
+  </div>
 
-    <div id="loading" class="loading">Cargando canciones...</div>
-    <div id="noResults" class="no-results" style="display: none;">
-        No se encontraron resultados
-    </div>
+  <div id="loading" class="loading">Cargando canciones...</div>
 
-    <script src="songs.js"></script>
-    <script src="app.js"></script>
+  <div id="noResults" class="no-results" style="display: none; padding: 20px; text-align: center;">
+      <p>No se encontraron resultados</p>
+  </div>
+
+  <div style="text-align: center; margin: 30px 10px; padding: 20px; border: 2px dashed #FF8C00; border-radius: 15px; background-color: rgba(0,0,0,0.3);">
+      <p style="color: white; margin-bottom: 15px; font-family: sans-serif;">¿No encuentras tu canción favorita?</p>
+      <a href="https://wa.me/584121591072?text=Hola, mi nombre es ____ y me gustaría pedir este tema que no está en la lista: Artista: ____, Canción: ____" 
+         target="_blank" 
+         style="background-color: #FF8C00; color: black; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; font-family: sans-serif;">
+         Pedir otro tema por WhatsApp
+      </a>
+  </div>
+
+  <script src="songs.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
