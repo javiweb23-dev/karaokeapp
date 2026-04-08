@@ -11,7 +11,7 @@ body {
     min-height: 100vh;
 }
 
-/* Header */
+/* --- HEADER Y BUSCADOR (Mantenemos tu estilo original) --- */
 .header {
     background: linear-gradient(135deg, #FF8C00 0%, #FF6600 50%, #FF4500 100%);
     padding: 20px;
@@ -22,126 +22,151 @@ body {
     border-bottom: 4px solid #000000;
 }
 
-/* Logo */
-.logo-container {
-    text-align: center;
-    margin-bottom: 15px;
-}
-
-.logo-image {
-    max-height: 80px;
-    width: auto;
-    max-width: 400px;
-    object-fit: contain;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-}
-
-.search-filter-container {
-    max-width: 900px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.search-container {
-    width: 100%;
-}
+.logo-container { text-align: center; margin-bottom: 15px; }
+.logo-image { max-height: 80px; width: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
 
 .search-input {
     width: 100%;
     padding: 15px 20px;
-    font-size: 1em;
     border: 3px solid #000000;
     border-radius: 50px;
     background: rgba(255, 255, 255, 0.95);
-    color: #000000;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-.search-input:focus {
-    border-color: #FF4500;
-    box-shadow: 0 0 20px rgba(255, 140, 0, 0.6);
-    transform: scale(1.02);
-}
-
-.search-input::placeholder {
-    color: #666;
-}
-
-/* Fila de filtros */
-.filters-row {
-    display: flex;
-    gap: 15px;
-    width: 100%;
-}
-
-.language-filter,
-.vocalist-filter {
-    flex: 1;
-    min-width: 0;
-}
-
-.filter-select {
-    width: 100%;
-    padding: 15px 40px 15px 20px;
-    font-size: 1em;
-    border: 3px solid #000000;
-    border-radius: 50px;
-    background: rgba(255, 255, 255, 0.95);
-    color: #000000;
-    outline: none;
-    cursor: pointer;
     font-weight: 600;
-    transition: all 0.3s ease;
+    outline: none;
+}
+
+.filters-row { display: flex; gap: 15px; margin-top: 15px; }
+.filter-select {
+    flex: 1;
+    padding: 12px;
+    border-radius: 50px;
+    border: 3px solid #000000;
+    font-weight: bold;
     appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 15px center;
-    background-size: 20px;
+    background: white url("data:image/svg+xml...") no-repeat right 15px center/20px;
 }
 
-.filter-select:hover {
-    border-color: #FF4500;
-    transform: scale(1.02);
-}
-
-/* Table Container */
+/* --- CONTENEDOR DE TABLA --- */
 .table-container {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 20px auto;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 15px;
-    box-shadow: 0 8px 32px rgba(255, 140, 0, 0.3);
-    max-height: calc(100vh - 220px);
-    border: 2px solid #FF8C00;
-    
-    /* SOLUCIÓN AL ANCHO: Permitir scroll horizontal */
-    overflow-x: auto;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    padding: 0 10px;
 }
 
-/* Custom Scrollbar */
-.table-container::-webkit-scrollbar {
-    width: 10px;
-    height: 10px; /* Para el scroll horizontal */
-}
-
-.table-container::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.4);
-}
-
-.table-container::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #FF8C00, #FF4500);
-    border-radius: 10px;
-}
-
-/* Table */
 .songs-table {
     width: 100%;
-    border-collapse: collapse;
-    /* Fuerza un ancho mínimo para que aparezca el scroll horizontal en móviles */
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+/* Ocultar columnas que no quieres mostrar pero que sirven para filtrar */
+.col-language, .col-vocalist, 
+td:nth-child(5), td:nth-child(6) {
+    display: none;
+}
+
+/* --- DISEÑO PARA ESCRITORIO --- */
+@media (min-width: 769px) {
+    .songs-table thead {
+        background: linear-gradient(135deg, #FF8C00 0%, #FF6600 100%);
+    }
+    .songs-table th {
+        padding: 15px;
+        color: black;
+        text-align: left;
+    }
+    .songs-table tbody tr {
+        background: rgba(255, 255, 255, 0.05);
+        transition: 0.3s;
+    }
+    .songs-table td { padding: 15px; }
+}
+
+/* --- SOLUCIÓN PARA MÓVILES (ESTILO CARDS) --- */
+@media (max-width: 768px) {
+    /* Ocultamos el encabezado de la tabla en móvil */
+    .songs-table thead { display: none; }
+
+    .songs-table tbody, .songs-table tr, .songs-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .songs-table tr {
+        background: rgba(40, 40, 40, 0.9);
+        border: 2px solid #FF8C00;
+        border-radius: 15px;
+        margin-bottom: 15px;
+        padding: 15px;
+        position: relative;
+        box-shadow: 0 4px 15px rgba(255, 140, 0, 0.2);
+    }
+
+    /* Número de la canción (arriba a la izquierda) */
+    .songs-table td:nth-child(1) {
+        color: #FF8C00;
+        font-size: 1.2em;
+        font-weight: bold;
+        padding: 0 0 5px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* Artista */
+    .songs-table td:nth-child(2) {
+        color: #FFA500;
+        font-size: 1.1em;
+        font-weight: 700;
+        padding: 8px 0 2px 0;
+        text-transform: uppercase;
+    }
+
+    /* Título de la canción */
+    .songs-table td:nth-child(3) {
+        color: #FFFFFF;
+        font-size: 1.3em;
+        font-weight: 500;
+        padding: 0 0 8px 0;
+    }
+
+    /* Género */
+    .songs-table td:nth-child(4) {
+        color: #FFB732;
+        font-size: 0.9em;
+        font-style: italic;
+        padding: 0;
+    }
+
+    /* BOTÓN DE WHATSAPP (Llamativo y grande) */
+    .songs-table td:last-child {
+        display: block;
+        margin-top: 15px;
+        padding: 0;
+        text-align: center;
+    }
+
+    .songs-table td:last-child a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #25D366;
+        color: white;
+        text-decoration: none;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 1em;
+        box-shadow: 0 4px 10px rgba(37, 211, 102, 0.4);
+    }
+
+    .songs-table td:last-child a::before {
+        content: 'PEDIR POR WHATSAPP ';
+        margin-right: 10px;
+    }
+
+    /* Ajuste para modo horizontal en móvil */
+    @media (orientation: landscape) and (max-height: 500px) {
+        .logo-container { display: none; }
+        .header { padding: 10px; }
+        .filters-row { margin-top: 5px; }
+    }
+}
