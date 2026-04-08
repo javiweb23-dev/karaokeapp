@@ -1,0 +1,453 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+    color: #fff;
+    min-height: 100vh;
+}
+
+/* Header */
+.header {
+    background: linear-gradient(135deg, #FF8C00 0%, #FF6600 50%, #FF4500 100%);
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 4px solid #000000;
+}
+
+/* Logo */
+.logo-container {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.logo-image {
+    max-height: 80px;
+    width: auto;
+    max-width: 400px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.search-filter-container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.search-container {
+    width: 100%;
+}
+
+.search-input {
+    width: 100%;
+    padding: 15px 20px;
+    font-size: 1em;
+    border: 3px solid #000000;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #000000;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: #FF4500;
+    box-shadow: 0 0 20px rgba(255, 140, 0, 0.6);
+    transform: scale(1.02);
+}
+
+.search-input::placeholder {
+    color: #666;
+}
+
+/* Fila de filtros */
+.filters-row {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+}
+
+/* Filtros de idioma y vocalista */
+.language-filter,
+.vocalist-filter {
+    flex: 1;
+    min-width: 0;
+}
+
+.filter-select {
+    width: 100%;
+    padding: 15px 40px 15px 20px;
+    font-size: 1em;
+    border: 3px solid #000000;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #000000;
+    outline: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 20px;
+}
+
+.filter-select:hover {
+    border-color: #FF4500;
+    transform: scale(1.02);
+}
+
+.filter-select:focus {
+    border-color: #FF4500;
+    box-shadow: 0 0 20px rgba(255, 140, 0, 0.6);
+}
+
+/* Table Container */
+.table-container {
+    max-width: 1400px;
+    margin: 20px auto;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(255, 140, 0, 0.3);
+    max-height: calc(100vh - 220px);
+    overflow-y: auto;
+    border: 2px solid #FF8C00;
+}
+
+/* Custom Scrollbar */
+.table-container::-webkit-scrollbar {
+    width: 12px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #FF8C00, #FF4500);
+    border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #FFA500, #FF6600);
+}
+
+/* Table */
+.songs-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.songs-table thead {
+    background: linear-gradient(135deg, #FF8C00 0%, #FF6600 100%);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.songs-table th {
+    padding: 18px 15px;
+    text-align: left;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9em;
+    color: #000000;
+    border-bottom: 3px solid #000000;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.songs-table th:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.02);
+}
+
+.songs-table th:active {
+    transform: scale(0.98);
+}
+
+/* Indicador de ordenamiento */
+.songs-table th::after {
+    content: ' ⇅';
+    opacity: 0.3;
+    font-size: 0.9em;
+}
+
+.songs-table th.sort-asc::after {
+    content: ' ↑';
+    opacity: 1;
+    color: #000000;
+    font-weight: bold;
+}
+
+.songs-table th.sort-desc::after {
+    content: ' ↓';
+    opacity: 1;
+    color: #000000;
+    font-weight: bold;
+}
+
+.songs-table tbody tr {
+    border-bottom: 1px solid rgba(255, 140, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.songs-table tbody tr:hover {
+    background: linear-gradient(90deg, rgba(255, 140, 0, 0.25), rgba(255, 100, 0, 0.25));
+    transform: scale(1.005);
+    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.4);
+}
+
+.songs-table td {
+    padding: 15px;
+    color: #f0f0f0;
+}
+
+/* Column Widths */
+.col-number {
+    width: 70px;
+    text-align: center;
+}
+
+.col-artist {
+    width: 22%;
+}
+
+.col-song {
+    width: 25%;
+}
+
+.col-genre {
+    width: 18%;
+}
+
+.col-language {
+    width: 13%;
+}
+
+.col-vocalist {
+    width: 12%;
+}
+
+/* Number Column Styling */
+.songs-table td:first-child {
+    font-weight: bold;
+    color: #FF8C00;
+    text-align: center;
+    font-size: 1.1em;
+}
+
+/* Artist Column */
+.songs-table tbody td:nth-child(2) {
+    color: #FFA500;
+    font-weight: 600;
+}
+
+/* Song Title Column */
+.songs-table tbody td:nth-child(3) {
+    color: #FFFFFF;
+    font-weight: 500;
+}
+
+/* Genre Badge */
+.songs-table tbody td:nth-child(4) {
+    color: #FFB732;
+    font-weight: 600;
+}
+
+/* Language Badge */
+.songs-table tbody td:nth-child(5) {
+    color: #FF8C00;
+    font-weight: 600;
+}
+
+/* Vocalist Badge */
+.songs-table tbody td:nth-child(6) {
+    color: #FFA500;
+    font-weight: 600;
+}
+
+/* Loading and No Results */
+.loading, .no-results {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.3em;
+    color: #FF8C00;
+}
+
+.no-results {
+    color: #FFA500;
+}
+
+/* Responsive Design */
+
+/* iPad Pro y tablets grandes (landscape) */
+@media (min-width: 1024px) and (max-width: 1366px) {
+    .search-filter-container {
+        max-width: 95%;
+    }
+}
+
+/* iPad y tablets (portrait - vertical) */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+    .logo-image {
+        max-height: 70px;
+        max-width: 350px;
+    }
+
+    .search-filter-container {
+        max-width: 95%;
+        gap: 12px;
+    }
+
+    .filters-row {
+        gap: 12px;
+    }
+
+    .search-input,
+    .filter-select {
+        padding: 14px 18px;
+        font-size: 0.95em;
+    }
+
+    .filter-select {
+        padding-right: 38px;
+    }
+
+    .table-container {
+        margin: 15px;
+        max-height: calc(100vh - 240px);
+    }
+
+    .songs-table th,
+    .songs-table td {
+        padding: 12px 10px;
+        font-size: 0.9em;
+    }
+}
+
+/* Móviles y tablets pequeñas */
+@media (max-width: 768px) {
+    .logo-image {
+        max-height: 60px;
+        max-width: 300px;
+    }
+
+    .search-filter-container {
+        gap: 12px;
+        width: 100%;
+    }
+
+    .filters-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .search-container,
+    .language-filter,
+    .vocalist-filter {
+        width: 100%;
+    }
+
+    .filter-select {
+        width: 100%;
+    }
+
+    .search-input,
+    .filter-select {
+        padding: 14px 18px;
+        font-size: 0.95em;
+    }
+
+    .songs-table th,
+    .songs-table td {
+        padding: 10px 8px;
+        font-size: 0.85em;
+    }
+
+    .col-number {
+        width: 50px;
+    }
+
+    .table-container {
+        margin: 10px;
+        max-height: calc(100vh - 320px);
+    }
+}
+
+/* iPhone y móviles pequeños */
+@media (max-width: 480px) {
+    .logo-image {
+        max-height: 50px;
+        max-width: 250px;
+    }
+
+    .header {
+        padding: 15px;
+    }
+
+    .search-filter-container {
+        gap: 10px;
+    }
+
+    .filters-row {
+        gap: 10px;
+    }
+
+    .search-input,
+    .filter-select {
+        padding: 12px 16px;
+        font-size: 0.9em;
+    }
+
+    .songs-table {
+        font-size: 0.75em;
+    }
+
+    .songs-table th,
+    .songs-table td {
+        padding: 8px 6px;
+    }
+
+    .songs-table th::after {
+        font-size: 0.8em;
+    }
+
+    .col-artist,
+    .col-song {
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .table-container {
+        margin: 8px;
+        max-height: calc(100vh - 320px);
+    }
+}
+
+/* iPad Mini y similares (portrait) */
+@media (min-width: 744px) and (max-width: 834px) and (orientation: portrait) {
+    .filters-row {
+        gap: 12px;
+    }
+}
