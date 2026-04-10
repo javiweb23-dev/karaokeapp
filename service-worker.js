@@ -1,12 +1,41 @@
-const CACHE_NAME = 'karaoke-super-fix-v1'; // <--- Súbele un número aquí
+const CACHE_NAME = 'karaoke-latino-v20'; // Subí a v20 para asegurar limpieza
 const urlsToCache = [
   '/',
-  '/index.html',
-  '/style.css',
-  '/app.js',
-  '/songs.js',
-  '/manifest.json',
-  '/logo.png'
+  'index.html',
+  'style.css',
+  'app.js',
+  'songs.js',
+  'manifest.json',
+  'logo.png'
 ];
 
-// ... el resto del código está perfecto, no hace falta tocarlo ...
+// Instalación: Guarda los archivos en la memoria del teléfono
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
+  );
+});
+
+// Activación: Borra cachés viejos que puedan tener errores
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});
+
+// Respuesta: Sirve los archivos desde la memoria
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => response || fetch(event.request))
+  );
+});
