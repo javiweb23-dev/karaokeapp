@@ -12,7 +12,7 @@
 // ============================================
 
 const songsDatabase = [
-    {number: 10, artist: "A.5", title: "ACURRUCAME LA VIDA", genre: "Pop / Otros", language: "ESPAÑOL"},
+  {number: 10, artist: "A.5", title: "ACURRUCAME LA VIDA", genre: "Pop / Otros", language: "ESPAÑOL"},
 {number: 11, artist: "ABBA", title: "DAME DAME DAME", genre: "Pop / Otros", language: "ESPAÑOL"},
 {number: 12, artist: "ABBA EN ESPANOL", title: "CHIQUITITA  ", genre: "Pop / Otros", language: "ESPAÑOL"},
 {number: 13, artist: "ABBA EN ESPANOL", title: "MAMMA MIA  ", genre: "Pop / Otros", language: "ESPAÑOL"},
@@ -1431,9 +1431,7 @@ const songsDatabase = [
 {number: 1426, artist: "YURIDIA ANGELA AGUILAR", title: "QUE AGONIA", genre: "Regional Mexicano", language: "ESPAÑOL"},
 {number: 1427, artist: "ZAPATO 3", title: "PANTALETAS NEGRAS", genre: "Rock / Pop Español", language: "ESPAÑOL"},
 {number: 1428, artist: "ZION LENNOX", title: "YO VOY", genre: "Reggaetón / Urbano", language: "ESPAÑOL"},
-{number: 1429, artist: "ZUCCHERO", title: "BAILA MORENA", genre: "Pop / Otros", language: "ESPAÑOL"},
-
-
-];
+{number: 1429, artist: "ZUCCHERO", title: "BAILA MORENA", genre: "Pop / Otros", language: "ESPAÑOL"}
+]; // <-- Esto cierra la lista. Sin coma antes del corchete.
 
 // NO MODIFIQUES NADA DEBAJO DE ESTA LÍNEA
