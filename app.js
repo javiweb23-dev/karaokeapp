@@ -8,11 +8,10 @@ let currentSort = {
 // Inicializar la aplicación
 document.addEventListener('DOMContentLoaded', () => {
   allSongs = [...songsDatabase];
-  filteredSongs = [...allSongs];
-  renderSongs(filteredSongs);
+  // Al cargar, aplicamos filtros para que respete el idioma seleccionado por defecto (Español)
+  applyFilters(); 
   setupSearch();
   setupLanguageFilter();
-  setupVocalistFilter();
   setupSortingHeaders();
   setupKeyboardHandling();
   hideLoading();
@@ -34,7 +33,6 @@ function renderSongs(songs) {
   noResults.style.display = 'none';
 
   songs.forEach(song => {
-      // Configuración del mensaje de WhatsApp
       const numeroWA = "584121591072";
       const mensaje = `Hola, mi nombre es ____ y quiero la canción numero ${song.number}: ${song.artist} - ${song.title}`;
       const urlWA = `https://wa.me/${numeroWA}?text=${encodeURIComponent(mensaje)}`;
@@ -46,7 +44,6 @@ function renderSongs(songs) {
           <td>${song.title}</td>
           <td>${song.genre}</td>
           <td>${song.language}</td>
-          <td>${song.vocalist || 'N/A'}</td>
           <td style="text-align: center;">
             <a href="${urlWA}" target="_blank" style="text-decoration: none; font-size: 20px;">📲</a>
           </td>
@@ -55,32 +52,25 @@ function renderSongs(songs) {
   });
 }
 
-// Aplicar filtros combinados (búsqueda + idioma + vocalista)
+// Aplicar filtros combinados (búsqueda + idioma obligatorio)
 function applyFilters() {
   const searchInput = document.getElementById('searchInput');
   const languageFilter = document.getElementById('languageFilter');
-  const vocalistFilter = document.getElementById('vocalistFilter');
 
   const searchTerm = searchInput.value.toLowerCase().trim();
   const selectedLanguage = languageFilter.value.toLowerCase();
-  const selectedVocalist = vocalistFilter.value.toLowerCase();
 
   filteredSongs = allSongs.filter(song => {
+      // El idioma debe coincidir estrictamente con la selección
+      const matchesLanguage = song.language.toLowerCase().includes(selectedLanguage);
+
       const matchesSearch = searchTerm === '' || 
           song.artist.toLowerCase().includes(searchTerm) ||
           song.title.toLowerCase().includes(searchTerm) ||
           song.genre.toLowerCase().includes(searchTerm) ||
-          song.language.toLowerCase().includes(searchTerm) ||
-          song.number.toString().includes(searchTerm) ||
-          (song.vocalist && song.vocalist.toLowerCase().includes(searchTerm));
+          song.number.toString().includes(searchTerm);
 
-      const matchesLanguage = selectedLanguage === 'todos' || 
-          song.language.toLowerCase().includes(selectedLanguage);
-
-      const matchesVocalist = selectedVocalist === 'todos' || 
-          (song.vocalist && song.vocalist.toLowerCase().includes(selectedVocalist));
-
-      return matchesSearch && matchesLanguage && matchesVocalist;
+      return matchesLanguage && matchesSearch;
   });
 
   if (currentSort.column) {
@@ -102,13 +92,6 @@ function setupLanguageFilter() {
   languageFilter.addEventListener('change', () => {
       applyFilters();
   });
-}
-
-function setupVocalistFilter() {
-  const vocalistFilter = document.getElementById('vocalistFilter');
-  vocalistFilter.addEventListener('change', () => {
-      applyFilters();
-    });
 }
 
 function setupKeyboardHandling() {
@@ -147,10 +130,10 @@ function setupKeyboardHandling() {
 function setupSortingHeaders() {
   const headers = document.querySelectorAll('.songs-table th');
   headers.forEach((header, index) => {
-      // Evitar que la columna de WhatsApp (índice 6) intente ordenar
-      if (index < 6) {
+      // Ahora la columna de WhatsApp es la índice 5
+      if (index < 5) {
           header.addEventListener('click', () => {
-              const columns = ['number', 'artist', 'title', 'genre', 'language', 'vocalist'];
+              const columns = ['number', 'artist', 'title', 'genre', 'language'];
               const column = columns[index];
               let direction = 'asc';
               if (currentSort.column === column && currentSort.direction === 'asc') {
@@ -201,16 +184,13 @@ function hideLoading() {
 
 function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
-    // Usamos '/service-worker.js' porque así aparece en tu código anterior
     navigator.serviceWorker.register('/service-worker.js').then(reg => {
       console.log('Service Worker registrado');
-
       reg.onupdatefound = () => {
         const installingWorker = reg.installing;
         installingWorker.onstatechange = () => {
           if (installingWorker.state === 'installed') {
             if (navigator.serviceWorker.controller) {
-              // El navegador detecta el cambio y se refresca solo
               console.log('Nueva versión detectada. Aplicando cambios...');
               window.location.reload();
             }

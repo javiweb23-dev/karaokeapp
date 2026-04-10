@@ -9,14 +9,14 @@ body {
     background: #000;
     color: #fff;
     min-height: 100vh;
-    overflow-x: hidden; /* Evita cualquier movimiento lateral */
+    overflow-x: hidden;
 }
 
-/* --- CABECERA FIJA (Sticky) --- */
+/* --- CABECERA FIJA --- */
 .header {
     background: linear-gradient(135deg, #FF8C00 0%, #FF4500 100%);
     padding: 10px 15px;
-    position: fixed; /* Cambiado a fixed para máxima estabilidad */
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
@@ -24,10 +24,17 @@ body {
     border-bottom: 2px solid #000;
 }
 
-.logo-container { text-align: center; margin-bottom: 8px; }
-.logo-image { max-height: 40px; width: auto; }
+.logo-container { 
+    text-align: center; 
+    margin-bottom: 8px; 
+}
 
-/* Buscador y Filtros */
+.logo-image { 
+    max-height: 40px; 
+    width: auto; 
+}
+
+/* Buscador */
 .search-input {
     width: 100%;
     padding: 10px 15px;
@@ -38,99 +45,125 @@ body {
     margin-bottom: 8px;
 }
 
+/* Fila de Filtros (Simplificada a 1 solo selector) */
 .filters-row {
     display: flex;
-    gap: 8px;
+    justify-content: center;
     margin-bottom: 8px;
 }
 
-.filter-select {
-    flex: 1;
-    padding: 8px;
-    border-radius: 10px;
-    border: 1px solid #000;
-    font-size: 12px;
-    font-weight: bold;
+.language-filter {
+    width: 100%;
 }
 
-/* BOTÓN DE PEDIR OTRO TEMA (Ahora en la cabecera) */
+.filter-select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #000;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+    background-color: #fff;
+    color: #000;
+}
+
+/* BOTÓN DE PEDIR OTRO TEMA */
 .custom-order-btn {
     display: block;
     background: #000;
     color: #FF8C00;
     text-align: center;
     text-decoration: none;
-    padding: 6px;
+    padding: 8px;
     border-radius: 8px;
     font-size: 11px;
     font-weight: bold;
     border: 1px solid #FF8C00;
 }
 
-/* --- CONTENEDOR DE LISTA (Con margen para no quedar debajo de la cabecera) --- */
+/* --- CONTENEDOR DE LISTA --- */
 .table-container {
-    margin-top: 190px; /* Ajusta este espacio según crezca tu cabecera */
+    margin-top: 195px; /* Espacio para que la lista no choque con la cabecera */
     padding: 10px;
 }
 
-/* Grid de 2 Columnas */
+/* Grid de 2 Columnas para Móvil */
 #songsTableBody {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Fuerza 2 columnas iguales */
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     width: 100%;
 }
 
-/* Tarjeta Individual */
+/* Tarjeta Individual de Canción */
 .songs-table tr {
     display: flex;
     flex-direction: column;
     background: #1a1a1a;
     border: 1px solid #333;
-    border-radius: 10px;
-    padding: 10px;
+    border-radius: 12px;
+    padding: 12px;
     justify-content: space-between;
-    min-height: 140px;
+    min-height: 150px;
+    transition: transform 0.2s;
 }
 
-/* Ocultar celdas innecesarias */
-.songs-table thead, .col-language, .col-vocalist, 
-td:nth-child(5), td:nth-child(6) { display: none; }
+.songs-table tr:active {
+    transform: scale(0.97); /* Efecto visual al tocar en el móvil */
+}
 
-/* Número e ID */
-td:nth-child(1) { color: #FF8C00; font-size: 11px; font-weight: bold; }
-/* Artista */
-td:nth-child(2) { color: #FFA500; font-size: 12px; font-weight: bold; text-transform: uppercase; margin: 4px 0; }
-/* Título */
+/* Ocultar elementos innecesarios de la tabla tradicional */
+.songs-table thead, 
+.col-language, 
+.col-vocalist, 
+td:nth-child(5) { 
+    display: none; 
+}
+
+/* Estilos de los Datos en la Tarjeta */
+td:nth-child(1) { color: #FF8C00; font-size: 11px; font-weight: bold; } /* Número */
+td:nth-child(2) { color: #FFA500; font-size: 12px; font-weight: bold; text-transform: uppercase; margin: 4px 0; } /* Artista */
 td:nth-child(3) { 
     color: #fff; 
     font-size: 14px; 
-    font-weight: 500; 
+    font-weight: 600; 
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     margin-bottom: 5px;
-}
-/* Género */
-td:nth-child(4) { color: #777; font-size: 10px; }
+    line-height: 1.2;
+} /* Título */
+td:nth-child(4) { color: #999; font-size: 10px; text-transform: uppercase; } /* Género */
 
-/* Botón PEDIR */
-td:last-child { margin-top: auto; padding-top: 10px; }
+/* Botón PEDIR WHATSAPP */
+td:last-child { 
+    margin-top: auto; 
+    padding-top: 10px; 
+}
+
 td:last-child a {
     display: block;
     background: #25D366;
     color: #fff;
     text-align: center;
     text-decoration: none;
-    padding: 8px;
-    border-radius: 6px;
+    padding: 10px;
+    border-radius: 8px;
     font-weight: bold;
-    font-size: 12px;
+    font-size: 13px;
 }
 
-/* Estilos para Desktop (Para que no se rompa la web) */
+/* Ajustes para Desktop */
 @media (min-width: 768px) {
     #songsTableBody { grid-template-columns: repeat(4, 1fr); }
-    .table-container { margin-top: 180px; }
+    .table-container { margin-top: 190px; }
+}
+
+/* Estilo para el cargando y sin resultados */
+.loading, .no-results {
+    color: #FF8C00;
+    font-weight: bold;
+    margin-top: 20px;
 }
