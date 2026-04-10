@@ -1,18 +1,6 @@
-// ============================================
-// BASE DE DATOS DE CANCIONES - KARAOKE LATINO
-// ============================================
-// 
-// CÓMO AGREGAR CANCIONES:
-// Usa la fórmula de Excel que te pasé:
-// {number: NUMERO, artist: "ARTISTA", title: "TITULO", genre: "GENERO", language: "IDIOMA"},
-//
-// IMPORTANTE: 
-// - No olvides la coma al final de cada línea (excepto la última)
-// - Usa comillas dobles para textos
-// ============================================
-
 const songsDatabase = [
-  {number: 10, artist: "A.5", title: "ACURRUCAME LA VIDA", genre: "Pop / Otros", language: "ESPAÑOL"},
+// PEGA AQUÍ TUS CANCIONES DE EXCEL
+{number: 10, artist: "A.5", title: "ACURRUCAME LA VIDA", genre: "Pop / Otros", language: "ESPAÑOL"},
 {number: 11, artist: "ABBA", title: "DAME DAME DAME", genre: "Pop / Otros", language: "ESPAÑOL"},
 {number: 12, artist: "ABBA EN ESPANOL", title: "CHIQUITITA  ", genre: "Pop / Otros", language: "ESPAÑOL"},
 {number: 13, artist: "ABBA EN ESPANOL", title: "MAMMA MIA  ", genre: "Pop / Otros", language: "ESPAÑOL"},
@@ -1432,6 +1420,5 @@ const songsDatabase = [
 {number: 1427, artist: "ZAPATO 3", title: "PANTALETAS NEGRAS", genre: "Rock / Pop Español", language: "ESPAÑOL"},
 {number: 1428, artist: "ZION LENNOX", title: "YO VOY", genre: "Reggaetón / Urbano", language: "ESPAÑOL"},
 {number: 1429, artist: "ZUCCHERO", title: "BAILA MORENA", genre: "Pop / Otros", language: "ESPAÑOL"}
-]; // <-- Esto cierra la lista. Sin coma antes del corchete.
 
-// NO MODIFIQUES NADA DEBAJO DE ESTA LÍNEA
+];
