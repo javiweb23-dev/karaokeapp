@@ -1,4 +1,4 @@
-const CACHE_NAME = 'karaoke-final-v1'; // <--- Súbele un número aquí
+const CACHE_NAME = 'karaoke-super-fix-v1'; // <--- Súbele un número aquí
 const urlsToCache = [
   '/',
   '/index.html',
