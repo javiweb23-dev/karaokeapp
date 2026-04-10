@@ -3,21 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Karaoke Latino - Buscador de Canciones</title>
-    <link rel="stylesheet" href="style.css?v=2.0">
+    <title>Karaoke Latino</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#FF8C00">
 </head>
 <body>
-
     <header class="header">
         <div class="logo-container">
-            <img src="logo.png" alt="Logo Karaoke Latino" class="logo-image">
+            <img src="logo.png" alt="Logo" class="logo-image">
         </div>
-
         <div class="search-filter-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="Buscar por título, artista o número...">
-
+            <input type="text" id="searchInput" class="search-input" placeholder="BUSCAR POR TÍTULO, ARTISTA O NÚMERO...">
             <div class="filters-row">
                 <select id="languageFilter" class="filter-select">
                     <option value="">TODOS LOS IDIOMAS</option>
@@ -25,27 +22,19 @@
                     <option value="ingles">INGLÉS</option>
                 </select>
             </div>
-
-            <a href="https://wa.me/584121591072?text=Hola!%20No%20encuentro%20un%20tema%20en%20la%20lista,%20me%20gustaría%20pedir:%20" 
-               target="_blank" 
-               class="custom-order-btn">
+            <a href="https://wa.me/584121591072?text=Hola!%20No%20encuentro%20un%20tema..." target="_blank" class="custom-order-btn">
                ¿No encuentras tu tema? Pídelo aquí 📲
             </a>
         </div>
     </header>
-
     <main class="table-container">
         <table class="songs-table">
-            <tbody id="songsTableBody">
-                </tbody>
+            <tbody id="songsTableBody"></tbody>
         </table>
-
         <div id="loading">Cargando canciones...</div>
         <div id="noResults" style="display: none;">No se encontraron resultados</div>
     </main>
-
-    <script src="songs.js?v=final_1"></script>
-<script src="app.js?v=final_1"></script>
-
+    <script src="songs.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

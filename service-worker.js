@@ -1,41 +1,24 @@
-const CACHE_NAME = 'karaoke-latino-v20'; // Subí a v20 para asegurar limpieza
-const urlsToCache = [
-  '/',
-  'index.html',
-  'style.css',
-  'app.js',
-  'songs.js',
-  'manifest.json',
-  'logo.png'
+const CACHE_NAME = 'karaoke-cache-v100';
+const assets = [
+    '/',
+    'index.html',
+    'style.css',
+    'app.js',
+    'songs.js',
+    'logo.png',
+    'manifest.json'
 ];
 
-// Instalación: Guarda los archivos en la memoria del teléfono
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-  );
+self.addEventListener('install', e => {
+    e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(assets)));
 });
 
-// Activación: Borra cachés viejos que puedan tener errores
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+self.addEventListener('activate', e => {
+    e.waitUntil(caches.keys().then(keys => Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+    )));
 });
 
-// Respuesta: Sirve los archivos desde la memoria
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
-  );
+self.addEventListener('fetch', e => {
+    e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
 });

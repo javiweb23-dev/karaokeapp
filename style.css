@@ -1,190 +1,21 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #000;
-    color: #fff;
-    min-height: 100vh;
-    overflow-x: hidden;
-}
-
-/* --- CABECERA FIJA (Sticky) --- */
-.header {
-    background: linear-gradient(135deg, #FF8C00 0%, #FF4500 100%);
-    padding: 10px 15px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    border-bottom: 2px solid #000;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-}
-
-.logo-container { 
-    text-align: center; 
-    margin-bottom: 8px; 
-}
-
-.logo-image { 
-    max-height: 40px; 
-    width: auto; 
-}
-
-/* Buscador */
-.search-input {
-    width: 100%;
-    padding: 10px 15px;
-    border-radius: 25px;
-    border: 2px solid #000;
-    font-size: 14px;
-    outline: none;
-    margin-bottom: 8px;
-    text-transform: uppercase; /* Lo que escriban se verá en mayúsculas */
-}
-
-/* Fila de Filtros */
-.filters-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-.filter-select {
-    flex: 1;
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid #000;
-    font-size: 13px;
-    font-weight: bold;
-    text-align: center;
-    background-color: #fff;
-    color: #000;
-}
-
-/* BOTÓN DE PEDIDO ESPECIAL */
-.custom-order-btn {
-    display: block;
-    background: #000;
-    color: #FF8C00;
-    text-align: center;
-    text-decoration: none;
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: bold;
-    border: 1px solid #FF8C00;
-    margin-top: 5px;
-    transition: all 0.2s ease;
-}
-
-.custom-order-btn:active {
-    background: #222;
-    transform: scale(0.97);
-}
-
-/* --- CONTENEDOR DE LISTA --- */
-.table-container {
-    /* Este margen es vital para que la lista empiece debajo de la cabecera */
-    margin-top: 225px; 
-    padding: 10px;
-}
-
-/* Grid de 2 Columnas para Móvil */
-#songsTableBody {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    width: 100%;
-}
-
-/* Tarjeta Individual de Canción */
-.songs-table tr {
-    display: flex;
-    flex-direction: column;
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 12px;
-    padding: 12px;
-    justify-content: space-between;
-    min-height: 155px;
-}
-
-/* Ocultar celdas innecesarias */
-.songs-table thead, 
-.col-language, 
-td:nth-child(5) { 
-    display: none; 
-}
-
-/* Número */
-td:nth-child(1) { 
-    color: #FF8C00; 
-    font-size: 11px; 
-    font-weight: bold; 
-}
-
-/* Artista */
-td:nth-child(2) { 
-    color: #FFA500; 
-    font-size: 12px; 
-    font-weight: bold; 
-    text-transform: uppercase; 
-    margin: 4px 0; 
-}
-
-/* Título */
-td:nth-child(3) { 
-    color: #fff; 
-    font-size: 14px; 
-    font-weight: 600; 
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin-bottom: 5px;
-    line-height: 1.2;
-}
-
-/* Género */
-td:nth-child(4) { 
-    color: #888; 
-    font-size: 10px; 
-    text-transform: uppercase; 
-}
-
-/* Botón Pedir (WhatsApp) */
-td:last-child { 
-    margin-top: auto; 
-    padding-top: 10px; 
-}
-
-td:last-child a {
-    display: block;
-    background: #25D366;
-    color: #fff;
-    text-align: center;
-    text-decoration: none;
-    padding: 10px;
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 13px;
-}
-
-/* Estilos para Desktop */
-@media (min-width: 768px) {
-    #songsTableBody { grid-template-columns: repeat(4, 1fr); }
-    .table-container { margin-top: 210px; }
-}
-
-/* Mensajes de estado */
-#loading, #noResults {
-    text-align: center;
-    padding: 20px;
-    font-weight: bold;
-    color: #FF8C00;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: sans-serif; background: #000; color: #fff; min-height: 100vh; }
+.header { background: linear-gradient(135deg, #FF8C00 0%, #FF4500 100%); padding: 15px; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+.logo-container { text-align: center; margin-bottom: 10px; }
+.logo-image { max-height: 40px; }
+.search-input { width: 100%; padding: 12px; border-radius: 25px; border: none; margin-bottom: 10px; text-transform: uppercase; }
+.filters-row { display: flex; gap: 10px; }
+.filter-select { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: bold; }
+.custom-order-btn { display: block; background: #000; color: #FF8C00; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 5px; }
+.table-container { margin-top: 230px; padding: 10px; }
+#songsTableBody { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.songs-table tr { display: flex; flex-direction: column; background: #1a1a1a; border-radius: 12px; padding: 15px; min-height: 150px; border: 1px solid #333; }
+td:nth-child(1) { color: #FF8C00; font-size: 12px; font-weight: bold; }
+td:nth-child(2) { color: #FFA500; font-weight: bold; text-transform: uppercase; margin: 5px 0; }
+td:nth-child(3) { font-size: 15px; font-weight: bold; margin-bottom: 5px; }
+td:nth-child(4) { color: #888; font-size: 11px; text-transform: uppercase; }
+td:nth-child(5) { display: none; }
+td:last-child { margin-top: auto; }
+td:last-child a { display: block; background: #25D366; color: #fff; text-align: center; padding: 8px; border-radius: 5px; text-decoration: none; font-weight: bold; }
+@media (min-width: 768px) { #songsTableBody { grid-template-columns: repeat(4, 1fr); } }
+#loading, #noResults { text-align: center; padding: 20px; color: #FF8C00; }
