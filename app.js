@@ -201,8 +201,22 @@ function hideLoading() {
 
 function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js')
-          .then(registration => console.log('Service Worker registrado'))
-          .catch(error => console.log('Error al registrar Service Worker:', error));
-    }
+    // Usamos '/service-worker.js' porque así aparece en tu código anterior
+    navigator.serviceWorker.register('/service-worker.js').then(reg => {
+      console.log('Service Worker registrado');
+
+      reg.onupdatefound = () => {
+        const installingWorker = reg.installing;
+        installingWorker.onstatechange = () => {
+          if (installingWorker.state === 'installed') {
+            if (navigator.serviceWorker.controller) {
+              // El navegador detecta el cambio y se refresca solo
+              console.log('Nueva versión detectada. Aplicando cambios...');
+              window.location.reload();
+            }
+          }
+        };
+      };
+    }).catch(error => console.log('Error al registrar Service Worker:', error));
+  }
 }
