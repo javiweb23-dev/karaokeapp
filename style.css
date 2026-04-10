@@ -12,7 +12,7 @@ body {
     overflow-x: hidden;
 }
 
-/* --- CABECERA FIJA --- */
+/* --- CABECERA FIJA (Sticky) --- */
 .header {
     background: linear-gradient(135deg, #FF8C00 0%, #FF4500 100%);
     padding: 10px 15px;
@@ -22,6 +22,7 @@ body {
     right: 0;
     z-index: 1000;
     border-bottom: 2px solid #000;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 
 .logo-container { 
@@ -43,21 +44,18 @@ body {
     font-size: 14px;
     outline: none;
     margin-bottom: 8px;
+    text-transform: uppercase; /* Lo que escriban se verá en mayúsculas */
 }
 
-/* Fila de Filtros (Simplificada a 1 solo selector) */
+/* Fila de Filtros */
 .filters-row {
     display: flex;
-    justify-content: center;
+    gap: 8px;
     margin-bottom: 8px;
 }
 
-.language-filter {
-    width: 100%;
-}
-
 .filter-select {
-    width: 100%;
+    flex: 1;
     padding: 10px;
     border-radius: 10px;
     border: 1px solid #000;
@@ -68,23 +66,31 @@ body {
     color: #000;
 }
 
-/* BOTÓN DE PEDIR OTRO TEMA */
+/* BOTÓN DE PEDIDO ESPECIAL */
 .custom-order-btn {
     display: block;
     background: #000;
     color: #FF8C00;
     text-align: center;
     text-decoration: none;
-    padding: 8px;
+    padding: 10px;
     border-radius: 8px;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: bold;
     border: 1px solid #FF8C00;
+    margin-top: 5px;
+    transition: all 0.2s ease;
+}
+
+.custom-order-btn:active {
+    background: #222;
+    transform: scale(0.97);
 }
 
 /* --- CONTENEDOR DE LISTA --- */
 .table-container {
-    margin-top: 195px; /* Espacio para que la lista no choque con la cabecera */
+    /* Este margen es vital para que la lista empiece debajo de la cabecera */
+    margin-top: 225px; 
     padding: 10px;
 }
 
@@ -105,25 +111,33 @@ body {
     border-radius: 12px;
     padding: 12px;
     justify-content: space-between;
-    min-height: 150px;
-    transition: transform 0.2s;
+    min-height: 155px;
 }
 
-.songs-table tr:active {
-    transform: scale(0.97); /* Efecto visual al tocar en el móvil */
-}
-
-/* Ocultar elementos innecesarios de la tabla tradicional */
+/* Ocultar celdas innecesarias */
 .songs-table thead, 
 .col-language, 
-.col-vocalist, 
 td:nth-child(5) { 
     display: none; 
 }
 
-/* Estilos de los Datos en la Tarjeta */
-td:nth-child(1) { color: #FF8C00; font-size: 11px; font-weight: bold; } /* Número */
-td:nth-child(2) { color: #FFA500; font-size: 12px; font-weight: bold; text-transform: uppercase; margin: 4px 0; } /* Artista */
+/* Número */
+td:nth-child(1) { 
+    color: #FF8C00; 
+    font-size: 11px; 
+    font-weight: bold; 
+}
+
+/* Artista */
+td:nth-child(2) { 
+    color: #FFA500; 
+    font-size: 12px; 
+    font-weight: bold; 
+    text-transform: uppercase; 
+    margin: 4px 0; 
+}
+
+/* Título */
 td:nth-child(3) { 
     color: #fff; 
     font-size: 14px; 
@@ -134,10 +148,16 @@ td:nth-child(3) {
     overflow: hidden;
     margin-bottom: 5px;
     line-height: 1.2;
-} /* Título */
-td:nth-child(4) { color: #999; font-size: 10px; text-transform: uppercase; } /* Género */
+}
 
-/* Botón PEDIR WHATSAPP */
+/* Género */
+td:nth-child(4) { 
+    color: #888; 
+    font-size: 10px; 
+    text-transform: uppercase; 
+}
+
+/* Botón Pedir (WhatsApp) */
 td:last-child { 
     margin-top: auto; 
     padding-top: 10px; 
@@ -155,15 +175,16 @@ td:last-child a {
     font-size: 13px;
 }
 
-/* Ajustes para Desktop */
+/* Estilos para Desktop */
 @media (min-width: 768px) {
     #songsTableBody { grid-template-columns: repeat(4, 1fr); }
-    .table-container { margin-top: 190px; }
+    .table-container { margin-top: 210px; }
 }
 
-/* Estilo para el cargando y sin resultados */
-.loading, .no-results {
-    color: #FF8C00;
+/* Mensajes de estado */
+#loading, #noResults {
+    text-align: center;
+    padding: 20px;
     font-weight: bold;
-    margin-top: 20px;
+    color: #FF8C00;
 }
