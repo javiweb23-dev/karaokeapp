@@ -1432,8 +1432,8 @@ const songsDatabase = [
 {number: 1426, artist: "YURIDIA ANGELA AGUILAR", title: "QUE AGONIA", genre: "Regional Mexicano", language: "ESPAÑOL", vocalist: " "},
 {number: 1427, artist: "ZAPATO 3", title: "PANTALETAS NEGRAS", genre: "Rock / Pop Español", language: "ESPAÑOL", vocalist: " "},
 {number: 1428, artist: "ZION LENNOX", title: "YO VOY", genre: "Reggaetón / Urbano", language: "ESPAÑOL", vocalist: " "},
-{number: 1429, artist: "ZUCCHERO", title: "BAILA MORENA", genre: "Pop / Otros", language: "ESPAÑOL", vocalist: " "},
-,
+{number: 1429, artist: "ZUCCHERO", title: "BAILA MORENA", genre: "Pop / Otros", language: "ESPAÑOL", vocalist: " "}
+]; // <-- Asegúrate de que tenga el corchete de cierre y el punto y coma.
 
 
     
