@@ -1066,12 +1066,12 @@ const songsDatabase = [
 {number: 1061, artist: "NINO SEGARRA", title: "ENTRE LA ESPADA Y LA PARED", genre: "Pop / Otros", language: "ESPAÑOL"},
 {number: 1062, artist: "NINO SEGARRA", title: "ERES LA UNICA", genre: "Pop / Otros", language: "ESPAÑOL"},
 {number: 1063, artist: "NSYNC", title: "YO TE VOY A AMAR", genre: "Pop / Otros", language: "ESPAÑOL"},
-{number: 1064, artist: "OLGA TANON", title: "ASI ES LA VIDA", genre: "Pop / Otros", language: "ESPAÑOL"},
-{number: 1065, artist: "OLGA TANON", title: "BASTA YA", genre: "Pop / Otros", language: "ESPAÑOL"},
-{number: 1066, artist: "OLGA TANON", title: "EL FRIO DE TU ADIOS  ", genre: "Pop / Otros", language: "ESPAÑOL"},
-{number: 1067, artist: "OLGA TANON", title: "ME CAMBIO POR ELLA  ", genre: "Pop / Otros", language: "ESPAÑOL"},
-{number: 1068, artist: "OLGA TANON", title: "MI ETERNO AMOR SECRETO  ", genre: "Pop / Otros", language: "ESPAÑOL"},
-{number: 1069, artist: "OLGA TANON", title: "TU AMOR", genre: "Pop / Otros", language: "ESPAÑOL"},
+{number: 1064, artist: "OLGA TAÑON", title: "ASI ES LA VIDA", genre: "Pop / Otros", language: "ESPAÑOL"},
+{number: 1065, artist: "OLGA TAÑON", title: "BASTA YA", genre: "Pop / Otros", language: "ESPAÑOL"},
+{number: 1066, artist: "OLGA TAÑON", title: "EL FRIO DE TU ADIOS  ", genre: "Pop / Otros", language: "ESPAÑOL"},
+{number: 1067, artist: "OLGA TAÑON", title: "ME CAMBIO POR ELLA  ", genre: "Pop / Otros", language: "ESPAÑOL"},
+{number: 1068, artist: "OLGA TAÑON", title: "MI ETERNO AMOR SECRETO  ", genre: "Pop / Otros", language: "ESPAÑOL"},
+{number: 1069, artist: "OLGA TAÑON", title: "TU AMOR", genre: "Pop / Otros", language: "ESPAÑOL"},
 {number: 1070, artist: "OLGA TAÑON", title: "MEGA MIX  ", genre: "Pop / Otros", language: "ESPAÑOL"},
 {number: 1071, artist: "OMAR GELES", title: "HOJA EN BLANCO  ", genre: "Pop / Otros", language: "ESPAÑOL"},
 {number: 1072, artist: "OMEGA FUEGO", title: "SUPER ESTRELLA  ", genre: "Pop / Otros", language: "ESPAÑOL"},
@@ -1432,6 +1432,7 @@ const songsDatabase = [
 {number: 1427, artist: "ZAPATO 3", title: "PANTALETAS NEGRAS", genre: "Rock / Pop Español", language: "ESPAÑOL"},
 {number: 1428, artist: "ZION LENNOX", title: "YO VOY", genre: "Reggaetón / Urbano", language: "ESPAÑOL"},
 {number: 1429, artist: "ZUCCHERO", title: "BAILA MORENA", genre: "Pop / Otros", language: "ESPAÑOL"},
+
 
 ];
 
