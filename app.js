@@ -103,7 +103,20 @@ function setupEventListeners() {
 
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js').catch(err => console.log("SW error:", err));
+        navigator.serviceWorker.register('service-worker.js').then(reg => {
+            reg.onupdatefound = () => {
+                const installingWorker = reg.installing;
+                installingWorker.onstatechange = () => {
+                    if (installingWorker.state === 'installed') {
+                        if (navigator.serviceWorker.controller) {
+                            // Si ya había un controlador, significa que esto es una actualización
+                            console.log("Nueva versión detectada, actualizando...");
+                            window.location.reload();
+                        }
+                    }
+                };
+            };
+        }).catch(err => console.log("Error registrando SW:", err));
     }
 }
 function registerServiceWorker() {

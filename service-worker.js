@@ -1,4 +1,12 @@
-const CACHE_NAME = 'karaoke-cache-v2'; // Incrementa esto siempre (v3, v4...)
+self.addEventListener('install', event => {
+    self.skipWaiting(); // Fuerza al SW a activarse apenas se instala
+});
+
+self.addEventListener('activate', event => {
+    event.waitUntil(clients.claim()); // Toma el control de las pestañas abiertas de inmediato
+});
+
+const CACHE_NAME = 'karaoke-cache-v3'; // Incrementa esto siempre (v3, v4...)
 const assets = [
     '/',
     'index.html',
