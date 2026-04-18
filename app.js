@@ -82,12 +82,17 @@ function applyFilters() {
 
     const filtered = allSongs.filter(s => {
         const matchLang = lang === "" || s.language.toLowerCase().includes(lang);
+        
         const cleanA = s.artist.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const cleanT = s.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const cleanG = s.genre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Limpiamos el género
+        
         const matchSearch = term === "" || 
                            cleanA.includes(term) || 
                            cleanT.includes(term) || 
+                           cleanG.includes(term) || // Ahora también busca en el género
                            s.number.toString().includes(term);
+                           
         return matchLang && matchSearch;
     });
     renderSongs(filtered);

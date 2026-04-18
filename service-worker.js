@@ -6,7 +6,7 @@ self.addEventListener('activate', event => {
     event.waitUntil(clients.claim()); // Toma el control de las pestañas abiertas de inmediato
 });
 
-const CACHE_NAME = 'karaoke-cache-v3'; // Incrementa esto siempre (v3, v4...)
+const CACHE_NAME = 'karaoke-cache-v4'; // Incrementa esto siempre (v3, v4...)
 const assets = [
     '/',
     'index.html',
