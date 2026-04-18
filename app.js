@@ -1,4 +1,5 @@
 let allSongs = [];
+const WHATSAPP_NUMBER = "584121591072";
 
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof songsDatabase !== 'undefined') {
@@ -23,19 +24,39 @@ function renderSongs(songs) {
     }
     noResults.style.display = 'none';
 
+    const fragment = document.createDocumentFragment();
+
     songs.forEach(song => {
         const row = document.createElement('tr');
-        const waMsg = encodeURIComponent(`Hola! Quiero cantar: ${song.number} - ${song.artist} - ${song.title}`);
         row.innerHTML = `
             <td>#${song.number}</td>
             <td>${song.artist}</td>
             <td>${song.title}</td>
             <td>${song.genre}</td>
             <td>${song.language}</td>
-            <td><a href="https://wa.me/584121591072?text=${waMsg}" target="_blank">PEDIR 📲</a></td>
+            <td><button class="btn-pedir" onclick="prepararPedido('${song.number}', '${song.artist.replace(/'/g, "\\'")}', '${song.title.replace(/'/g, "\\')}')">PEDIR 📲</button></td>
         `;
-        tbody.appendChild(row);
+        fragment.appendChild(row);
     });
+    
+    tbody.appendChild(fragment);
+}
+
+function prepararPedido(number, artist, title) {
+    let userName = localStorage.getItem('karaoke_user_name');
+
+    if (!userName || userName.trim() === "") {
+        userName = prompt("¡Hola! ¿Cuál es tu nombre para anunciarte en el escenario?");
+        if (userName && userName.trim() !== "") {
+            localStorage.setItem('karaoke_user_name', userName.trim());
+        } else {
+            return;
+        }
+    }
+
+    const text = `Hola, soy ${userName} y quiero cantar: ${number} - ${artist} - ${title}`;
+    const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+    window.open(waUrl, '_blank');
 }
 
 function applyFilters() {
