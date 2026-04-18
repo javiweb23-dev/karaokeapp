@@ -67,7 +67,9 @@ function prepararPedido(number, artist, title) {
 
     const text = `Hola, soy ${userName} y quiero cantar: ${number} - ${artist} - ${title}`;
     const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
-    window.open(waUrl, '_blank');
+    
+    // Cambiamos window.open por redirección directa
+    window.location.href = waUrl;
 }
 
 function applyFilters() {
