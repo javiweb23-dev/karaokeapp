@@ -66,9 +66,10 @@ function prepararPedido(number, artist, title) {
     }
 
     const text = `Hola, soy ${userName} y quiero cantar: ${number} - ${artist} - ${title}`;
-    const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
     
-    // Cambiamos window.open por redirección directa
+    // Usamos el protocolo directo de la aplicación
+    const waUrl = `whatsapp://send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(text)}`;
+    
     window.location.href = waUrl;
 }
 
@@ -103,5 +104,20 @@ function setupEventListeners() {
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js').catch(err => console.log("SW error:", err));
+    }
+}
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js').then(reg => {
+            reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        // Detecta que hay una versión nueva y recarga la página
+                        window.location.reload();
+                    }
+                });
+            });
+        }).catch(err => console.log("SW error:", err));
     }
 }

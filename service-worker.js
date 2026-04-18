@@ -1,4 +1,4 @@
-const CACHE_NAME = 'karaoke-cache-v100';
+const CACHE_NAME = 'karaoke-cache-v2'; // Incrementa esto siempre (v3, v4...)
 const assets = [
     '/',
     'index.html',
