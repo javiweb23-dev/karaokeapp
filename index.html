@@ -12,24 +12,30 @@
             background-color: #121212;
             color: white;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
-        h1 {
+        /* LOGO */
+        .header-logo {
             text-align: center;
-            color: #ff6600;
+            margin-bottom: 20px;
+        }
+        .header-logo img {
+            max-width: 180px; /* Ajusta según el tamaño de tu logo */
+            height: auto;
         }
 
+        /* BUSCADOR Y FILTROS */
         #buscador {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
             border: 1px solid #333;
             background-color: #1e1e1e;
             color: white;
@@ -37,30 +43,69 @@
             box-sizing: border-box;
         }
 
+        .filtros-idioma {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .btn-filtro {
+            background-color: #2a2a2a;
+            color: #ccc;
+            border: 1px solid #444;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-filtro.active {
+            background-color: #ff6600;
+            color: white;
+            border-color: #ff6600;
+        }
+
+        /* TABLA CON SCROLL LATERAL */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto; /* Permite mover a un lado */
+            -webkit-overflow-scrolling: touch;
+            border-radius: 10px;
+            background-color: #1e1e1e;
+            margin-bottom: 20px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed;
+            min-width: 500px; /* Fuerza el scroll en móviles */
         }
 
         th, td {
-            padding: 12px 8px;
+            padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid #333;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            white-space: nowrap; /* Evita que el texto salte de línea */
         }
 
         th {
-            background-color: #1e1e1e;
+            background-color: #1a1a1a;
             color: #ff6600;
+            font-size: 13px;
+            text-transform: uppercase;
         }
 
-        .col-btn { width: 80px; }
-        .col-artista { width: 35%; }
-        .col-cancion { width: 45%; }
-        .col-extra { width: 20%; }
+        /* BOTÓN PEDIR FIJO (Opcional: puedes hacerlo sticky si quieres que no se mueva) */
+        .col-btn {
+            width: 80px;
+            position: sticky;
+            left: 0;
+            background-color: #1e1e1e;
+            z-index: 2;
+        }
+        
+        th.col-btn { background-color: #1a1a1a; z-index: 3; }
 
         .btn-pedir {
             background-color: #ff6600;
@@ -70,54 +115,73 @@
             border-radius: 5px;
             font-weight: bold;
             cursor: pointer;
-            width: 100%;
         }
 
-        .btn-pedir:active {
-            transform: scale(0.95);
-            background-color: #e65c00;
+        /* BOTÓN CANCIÓN NO ENCONTRADA */
+        .extra-options {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: #1e1e1e;
+            border-radius: 10px;
+            border: 1px dashed #444;
         }
 
-        @media (max-width: 600px) {
-            .desktop-only {
-                display: none;
-            }
-            .col-artista { width: 40%; }
-            .col-cancion { width: 40%; }
-            .col-btn { width: 70px; }
-            
-            td, th {
-                font-size: 14px;
-                padding: 10px 5px;
-            }
+        .btn-especial {
+            background-color: transparent;
+            color: #ff6600;
+            border: 1px solid #ff6600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Karaoke Latino</h1>
+        <div class="header-logo">
+            <img src="logo.png" alt="Mi Karaoke Latino">
+        </div>
         
-        <input type="text" id="buscador" placeholder="Busca por artista o canción..." onkeyup="filtrar()">
+        <div class="filtros-idioma">
+            <button class="btn-filtro active" onclick="filtrarIdioma('Todos', this)">Todos</button>
+            <button class="btn-filtro" onclick="filtrarIdioma('Español', this)">Español</button>
+            <button class="btn-filtro" onclick="filtrarIdioma('Inglés', this)">Inglés</button>
+        </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th class="col-btn">Pedir</th>
-                    <th class="col-artista">Artista</th>
-                    <th class="col-cancion">Canción</th>
-                    <th class="col-extra desktop-only">Género</th>
-                    <th class="col-extra desktop-only">Número</th>
-                </tr>
-            </thead>
-            <tbody id="lista-canciones"></tbody>
-        </table>
+        <input type="text" id="buscador" placeholder="Busca tu artista o canción..." onkeyup="filtrar()">
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-btn">Pedir</th>
+                        <th>Artista</th>
+                        <th>Canción</th>
+                        <th>Género</th>
+                        <th>#</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-canciones"></tbody>
+            </table>
+        </div>
+
+        <div class="extra-options">
+            <p style="color: #888;">¿No encuentras lo que buscas?</p>
+            <button class="btn-especial" onclick="pedirEspecial()">Sugerir canción que no está en la lista</button>
+        </div>
     </div>
 
     <script>
         const SUPABASE_URL = 'https://mefrjbmjfdphdqndpzcw.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let idiomaActual = 'Todos';
 
         function renderizar(canciones) {
             const tbody = document.getElementById('lista-canciones');
@@ -129,10 +193,10 @@
                     <td class="col-btn">
                         <button class="btn-pedir" onclick="solicitar(${song.number}, '${song.title.replace(/'/g, "\\'")}', '${song.artist.replace(/'/g, "\\'")}')">Pedir</button>
                     </td>
-                    <td class="col-artista">${song.artist}</td>
-                    <td class="col-cancion">${song.title}</td>
-                    <td class="col-extra desktop-only">${song.genre}</td>
-                    <td class="col-extra desktop-only">#${song.number}</td>
+                    <td>${song.artist}</td>
+                    <td>${song.title}</td>
+                    <td style="color: #888;">${song.genre}</td>
+                    <td style="color: #666;">${song.number}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -140,29 +204,35 @@
 
         function filtrar() {
             const termino = document.getElementById('buscador').value.toLowerCase();
-            const filtradas = songsDatabase.filter(s => 
-                s.artist.toLowerCase().includes(termino) || 
-                s.title.toLowerCase().includes(termino)
-            );
+            const filtradas = songsDatabase.filter(s => {
+                const matchTexto = s.artist.toLowerCase().includes(termino) || s.title.toLowerCase().includes(termino);
+                const matchIdioma = (idiomaActual === 'Todos' || s.language === idiomaActual);
+                return matchTexto && matchIdioma;
+            });
             renderizar(filtradas);
+        }
+
+        function filtrarIdioma(idioma, element) {
+            idiomaActual = idioma;
+            document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('active'));
+            element.classList.add('active');
+            filtrar();
         }
 
         async function solicitar(numero, titulo, artista) {
             const { error } = await _supabase
                 .from('Solicitudes')
-                .insert([
-                    { 
-                        numero_cancion: numero, 
-                        nombre_cancion: titulo, 
-                        artista: artista,
-                        estado: 'pendiente'
-                    }
-                ]);
+                .insert([{ numero_cancion: numero, nombre_cancion: titulo, artista: artista, estado: 'pendiente' }]);
 
-            if (error) {
-                alert('Error al enviar pedido');
-            } else {
-                alert('¡Canción pedida con éxito!');
+            if (error) alert('Error al enviar');
+            else alert('¡Enviada! Espera tu turno.');
+        }
+
+        function pedirEspecial() {
+            const sugerencia = prompt("Escribe el nombre de la canción y el artista que quieres:");
+            if (sugerencia) {
+                _supabase.from('Solicitudes').insert([{ nombre_cancion: 'SUGERENCIA: ' + sugerencia, artista: 'EXTERNO', estado: 'pendiente' }]);
+                alert("Gracias, intentaremos buscarla por ti.");
             }
         }
 
