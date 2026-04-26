@@ -1,0 +1,25 @@
+// Lógica simplificada para el Admin
+async function cargarSolicitudes() {
+    const { data, error } = await supabase
+        .from('solicitudes')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+    renderAdminTable(data);
+}
+
+// Escuchar cambios en tiempo real (Realtime)
+supabase
+    .channel('cambios-solicitudes')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'solicitudes' }, payload => {
+        console.log('¡Nueva canción pedida!', payload.new);
+        cargarSolicitudes(); // Recarga la lista automáticamente
+    })
+    .subscribe();
+
+async function cambiarEstado(id, nuevoEstado) {
+    await supabase
+        .from('solicitudes')
+        .update({ estado: nuevoEstado })
+        .eq('id', id);
+}
