@@ -5,7 +5,6 @@ const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let allSongs = [];
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Le damos un respiro de 100ms al navegador para asegurar que songs.js cargó bien
     setTimeout(() => {
         if (typeof songsDatabase !== 'undefined') {
             allSongs = [...songsDatabase];
@@ -16,6 +15,56 @@ document.addEventListener('DOMContentLoaded', () => {
         setupEventListeners();
     }, 100);
 });
+
+// FUNCIÓN PARA CREAR UNA ALERTA ELEGANTE Y SALTARSE EL AVISO DEL NAVEGADOR
+function mostrarAlertaElegante(mensaje) {
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '0'; modal.style.left = '0'; modal.style.width = '100%'; modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.85)';
+    modal.style.display = 'flex'; modal.style.justifyContent = 'center'; modal.style.alignItems = 'center';
+    modal.style.zIndex = '9999';
+
+    const box = document.createElement('div');
+    box.style.backgroundColor = '#1a1a1a';
+    box.style.padding = '25px';
+    box.style.borderRadius = '12px';
+    box.style.border = '2px solid #ff6600';
+    box.style.textAlign = 'center';
+    box.style.maxWidth = '85%';
+    box.style.color = 'white';
+    box.style.boxShadow = '0 10px 25px rgba(255, 102, 0, 0.2)';
+
+    const title = document.createElement('h3');
+    title.innerText = '🎤 Karaoke Latino Dice:';
+    title.style.color = '#ff6600';
+    title.style.margin = '0 0 15px 0';
+
+    const text = document.createElement('p');
+    text.innerText = mensaje;
+    text.style.whiteSpace = 'pre-line'; // Respeta los saltos de línea
+    text.style.fontSize = '16px';
+    text.style.lineHeight = '1.5';
+
+    const btn = document.createElement('button');
+    btn.innerText = 'ACEPTAR';
+    btn.style.backgroundColor = '#ff6600';
+    btn.style.color = 'white';
+    btn.style.border = 'none';
+    btn.style.padding = '12px 25px';
+    btn.style.borderRadius = '8px';
+    btn.style.marginTop = '20px';
+    btn.style.cursor = 'pointer';
+    btn.style.fontWeight = 'bold';
+    btn.style.fontSize = '16px';
+    btn.onclick = () => document.body.removeChild(modal);
+
+    box.appendChild(title);
+    box.appendChild(text);
+    box.appendChild(btn);
+    modal.appendChild(box);
+    document.body.appendChild(modal);
+}
 
 async function prepararPedido(number, artist, title) {
     let userName = localStorage.getItem('karaoke_user_name');
@@ -29,7 +78,6 @@ async function prepararPedido(number, artist, title) {
         }
     }
 
-    // El select() es vital para obtener el ID de la canción que acabamos de pedir
     const { data, error } = await _supabase
         .from('Solicitudes')
         .insert([
@@ -47,7 +95,6 @@ async function prepararPedido(number, artist, title) {
     } else {
         alert("¡Recibido! Tu canción ya está en la lista. Mantén esta página abierta para avisarte cuando te toque.");
 
-        // INICIO DE LA ALERTA DE PREPARACIÓN
         if (data && data.length > 0) {
             const idUnico = data[0].id;
 
@@ -63,7 +110,8 @@ async function prepararPedido(number, artist, title) {
                     },
                     (payload) => {
                         if (payload.new.estado === 'preparate') {
-                            alert(`🎤 ¡PREPÁRATE ${userName.toUpperCase()}!\n\nTu canción "${title}" es la siguiente.\n\n¡Ve acercándote al DJ!`);
+                            // AQUÍ ESTÁ EL TEXTO NUEVO Y LA ALERTA PERSONALIZADA
+                            mostrarAlertaElegante(`¡PREPÁRATE ${userName.toUpperCase()}!\n\nTu canción "${title}" es la siguiente.\n\nPendiente, puedes levantar la mano para ubicarte y que te lleven el micrófono.`);
                         }
                     }
                 )
@@ -93,7 +141,6 @@ function renderSongs(songs) {
     songs.forEach(song => {
         const row = document.createElement('tr');
         
-        // Limpiamos comillas por seguridad para que el botón no se rompa
         const safeArtist = song.artist ? song.artist.replace(/'/g, "\\'") : "Desconocido";
         const safeTitle = song.title ? song.title.replace(/'/g, "\\'") : "Desconocido";
         
