@@ -31,7 +31,9 @@ function mostrarAlertaElegante(mensaje) {
     box.style.borderRadius = '12px';
     box.style.border = '2px solid #ff6600';
     box.style.textAlign = 'center';
-    box.style.maxWidth = '85%';
+    box.style.width = '85%'; 
+    box.style.maxWidth = '400px'; 
+    box.style.boxSizing = 'border-box'; // <--- ESTA LÍNEA EVITA EL DESCUADRE
     box.style.color = 'white';
     box.style.boxShadow = '0 10px 25px rgba(255, 102, 0, 0.2)';
 
