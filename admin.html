@@ -6,35 +6,53 @@
     <title>Admin - Karaoke Latino</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .admin-container { padding: 20px; }
-        .pedido-card {
-            background: #222;
-            border-left: 5px solid #ff6600;
-            padding: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .btn-aprobar {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn-eliminar {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 10px;
-            margin-left: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-    </style>
+    body { background-color: #000; color: #fff; font-family: sans-serif; margin: 0; }
+    .header { 
+        background-color: #ff6600; 
+        text-align: center; 
+        padding: 15px; 
+        position: fixed; 
+        top: 0; 
+        width: 100%; 
+        z-index: 1000; 
+    }
+    .admin-container { 
+        padding: 20px; 
+        margin-top: 100px; 
+    }
+    .pedido-card {
+        background: #1a1a1a;
+        border-left: 5px solid #ff6600;
+        padding: 20px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 0 10px 10px 0;
+    }
+    .info { flex-grow: 1; }
+    .info small { color: #888; }
+    .info strong { color: #ff6600; font-size: 1.2em; }
+    .info span { display: block; margin-top: 5px; font-size: 1.1em; }
+    .btn-aprobar {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 15px 25px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .btn-eliminar {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 15px;
+        margin-left: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>
 </head>
 <body>
     <div class="header">
