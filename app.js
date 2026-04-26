@@ -16,14 +16,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
 });
 
-// FUNCIÓN DE ALERTA ELEGANTE
+// FUNCIÓN DE ALERTA ELEGANTE (BLINDADA CONTRA CSS EXTERNO)
 function mostrarAlertaElegante(mensaje) {
     const modal = document.createElement('div');
     modal.style.position = 'fixed';
-    modal.style.top = '0'; modal.style.left = '0'; modal.style.width = '100%'; modal.style.height = '100%';
+    modal.style.top = '0'; 
+    modal.style.left = '0'; 
+    modal.style.width = '100vw'; // Forzamos el ancho exacto de la pantalla
+    modal.style.height = '100vh'; // Forzamos el alto exacto de la pantalla
     modal.style.backgroundColor = 'rgba(0,0,0,0.85)';
-    modal.style.display = 'flex'; modal.style.justifyContent = 'center'; modal.style.alignItems = 'center';
+    modal.style.display = 'flex'; 
+    modal.style.justifyContent = 'center'; 
+    modal.style.alignItems = 'center';
     modal.style.zIndex = '9999';
+    modal.style.margin = '0'; // Reseteo de seguridad
+    modal.style.padding = '0'; // Reseteo de seguridad
+    modal.style.boxSizing = 'border-box';
 
     const box = document.createElement('div');
     box.style.backgroundColor = '#1a1a1a';
@@ -31,11 +39,12 @@ function mostrarAlertaElegante(mensaje) {
     box.style.borderRadius = '12px';
     box.style.border = '2px solid #ff6600';
     box.style.textAlign = 'center';
-    box.style.width = '85%'; 
+    box.style.width = 'calc(100% - 40px)'; // 100% menos 20px de cada lado para que respire
     box.style.maxWidth = '400px'; 
-    box.style.boxSizing = 'border-box'; // <--- ESTA LÍNEA EVITA EL DESCUADRE
+    box.style.boxSizing = 'border-box'; 
     box.style.color = 'white';
     box.style.boxShadow = '0 10px 25px rgba(255, 102, 0, 0.2)';
+    box.style.margin = '0'; // <--- EL ANTÍDOTO: Evita que tu style.css lo empuje a la derecha
 
     const title = document.createElement('h3');
     title.innerText = '🎤 Karaoke Latino Dice:';
@@ -44,10 +53,11 @@ function mostrarAlertaElegante(mensaje) {
 
     const text = document.createElement('p');
     text.innerText = mensaje;
-    text.style.whiteSpace = 'pre-line'; // Respeta los saltos de línea
+    text.style.whiteSpace = 'pre-line'; 
     text.style.fontSize = '16px';
     text.style.lineHeight = '1.5';
-    text.style.wordBreak = 'break-word'; // Evita que los textos largos se corten en los bordes
+    text.style.wordBreak = 'break-word';
+    text.style.margin = '0'; // Reseteo de seguridad
 
     const btn = document.createElement('button');
     btn.innerText = 'ACEPTAR';
@@ -96,7 +106,6 @@ async function prepararPedido(number, artist, title) {
     if (error) {
         mostrarAlertaElegante("❌ Error: " + error.message);
     } else {
-        // MENSAJE DE "RECIBIDO" AHORA ES ELEGANTE
         mostrarAlertaElegante("✅ ¡Recibido!\n\nTu canción ya está en la lista.\n\nMantén esta página abierta para avisarte cuando te toque cantar.");
 
         if (data && data.length > 0) {
