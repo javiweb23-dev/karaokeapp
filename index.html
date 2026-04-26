@@ -26,26 +26,14 @@
         }
 
         .header-logo img {
-            max-width: 180px;
+            max-width: 160px;
             height: auto;
-        }
-
-        #buscador {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            border: 1px solid #333;
-            background-color: #1e1e1e;
-            color: white;
-            font-size: 16px;
-            box-sizing: border-box;
         }
 
         .filtros-idioma {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 15px;
             justify-content: center;
         }
 
@@ -53,10 +41,10 @@
             background-color: #2a2a2a;
             color: #ccc;
             border: 1px solid #444;
-            padding: 10px 18px;
-            border-radius: 25px;
+            padding: 10px 15px;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
         }
 
@@ -66,37 +54,53 @@
             border-color: #ff6600;
         }
 
+        #buscador {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            background-color: #1e1e1e;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        /* ESTO PERMITE EL MOVIMIENTO LATERAL */
         .table-wrapper {
             width: 100%;
             overflow-x: auto;
             background-color: #1e1e1e;
             border-radius: 10px;
             border: 1px solid #333;
+            -webkit-overflow-scrolling: touch;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 600px; 
+            min-width: 700px; /* Fuerza el scroll para que se vea todo */
         }
 
         th, td {
             padding: 15px;
             text-align: left;
             border-bottom: 1px solid #333;
-            white-space: nowrap;
+            white-space: nowrap; /* Evita que el texto salte de línea */
         }
 
         th {
             background-color: #1a1a1a;
             color: #ff6600;
+            font-size: 12px;
+            text-transform: uppercase;
         }
 
         .btn-pedir {
             background-color: #ff6600;
             color: white;
             border: none;
-            padding: 10px 16px;
+            padding: 10px 18px;
             border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
@@ -106,7 +110,7 @@
             text-align: center;
             margin-top: 30px;
             padding: 20px;
-            border: 2px dashed #333;
+            border: 2px dashed #444;
             border-radius: 10px;
         }
 
@@ -130,18 +134,18 @@
         </div>
 
         <div class="filtros-idioma">
-            <button class="btn-filtro active" onclick="cambiarIdioma('Todos', this)">Todos</button>
-            <button class="btn-filtro" onclick="cambiarIdioma('Español', this)">Español</button>
-            <button class="btn-filtro" onclick="cambiarIdioma('Inglés', this)">Inglés</button>
+            <button class="btn-filtro active" onclick="setFiltro('Todos', this)">Todos</button>
+            <button class="btn-filtro" onclick="setFiltro('Español', this)">Español</button>
+            <button class="btn-filtro" onclick="setFiltro('Inglés', this)">Inglés</button>
         </div>
 
-        <input type="text" id="buscador" placeholder="Buscar artista o canción..." onkeyup="ejecutarFiltro()">
+        <input type="text" id="buscador" placeholder="Busca tu artista o canción..." onkeyup="filtrar()">
 
         <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
-                        <th>Pedir</th>
+                        <th style="width: 100px;">Pedir</th>
                         <th>Artista</th>
                         <th>Canción</th>
                         <th>Género</th>
@@ -153,8 +157,8 @@
         </div>
 
         <div class="extra-options">
-            <div style="color: #aaa; margin-bottom: 10px;">¿No encuentras tu canción?</div>
-            <button class="btn-especial" onclick="pedirFueraDeLista()">Pedir canción fuera de lista</button>
+            <div style="color: #888;">¿No encuentras lo que buscas?</div>
+            <button class="btn-especial" onclick="pedirManual()">Pedir canción fuera de lista</button>
         </div>
     </div>
 
@@ -163,49 +167,69 @@
         const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let filtroIdioma = 'Todos';
+        let idiomaSeleccionado = 'Todos';
 
-        function render(datos) {
+        function render(canciones) {
             const listado = document.getElementById('lista-canciones');
-            let html = '';
-            
-            datos.forEach(s => {
-                const tituloEscapado = s.title.replace(/'/g, "\\'");
-                const artistaEscapado = s.artist.replace(/'/g, "\\'");
-                
-                html += `
-                    <tr>
-                        <td>
-                            <button class="btn-pedir" onclick="enviarPedido(${s.number}, '${tituloEscapado}', '${artistaEscapado}')">Pedir</button>
-                        </td>
-                        <td>${s.artist}</td>
-                        <td>${s.title}</td>
-                        <td style="color: #888;">${s.genre}</td>
-                        <td style="color: #555;">${s.number}</td>
-                    </tr>
-                `;
+            listado.innerHTML = '';
+
+            canciones.forEach(s => {
+                const tr = document.createElement('tr');
+
+                // Columna Botón (Creación segura sin comillas)
+                const tdBtn = document.createElement('td');
+                const btn = document.createElement('button');
+                btn.className = 'btn-pedir';
+                btn.innerText = 'Pedir';
+                btn.onclick = () => enviar(s.number, s.title, s.artist);
+                tdBtn.appendChild(btn);
+
+                // Columna Artista
+                const tdArtista = document.createElement('td');
+                tdArtista.innerText = s.artist;
+
+                // Columna Canción
+                const tdTitulo = document.createElement('td');
+                tdTitulo.innerText = s.title;
+
+                // Columna Género
+                const tdGenero = document.createElement('td');
+                tdGenero.style.color = '#888';
+                tdGenero.innerText = s.genre;
+
+                // Columna Número
+                const tdNum = document.createElement('td');
+                tdNum.style.color = '#555';
+                tdNum.innerText = s.number;
+
+                tr.appendChild(tdBtn);
+                tr.appendChild(tdArtista);
+                tr.appendChild(tdTitulo);
+                tr.appendChild(tdGenero);
+                tr.appendChild(tdNum);
+
+                listado.appendChild(tr);
             });
-            listado.innerHTML = html;
         }
 
-        function ejecutarFiltro() {
-            const busqueda = document.getElementById('buscador').value.toLowerCase();
-            const resultado = songsDatabase.filter(s => {
-                const cumpleTexto = s.artist.toLowerCase().includes(busqueda) || s.title.toLowerCase().includes(busqueda);
-                const cumpleIdioma = filtroIdioma === 'Todos' || s.language === filtroIdioma;
-                return cumpleTexto && cumpleIdioma;
+        function filtrar() {
+            const txt = document.getElementById('buscador').value.toLowerCase();
+            const result = songsDatabase.filter(s => {
+                const matchBusqueda = s.artist.toLowerCase().includes(txt) || s.title.toLowerCase().includes(txt);
+                const matchIdioma = (idiomaSeleccionado === 'Todos' || s.language === idiomaSeleccionado);
+                return matchBusqueda && matchIdioma;
             });
-            render(resultado);
+            render(result);
         }
 
-        function cambiarIdioma(idioma, el) {
-            filtroIdioma = idioma;
+        function setFiltro(idioma, el) {
+            idiomaSeleccionado = idioma;
             document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
-            ejecutarFiltro();
+            filtrar();
         }
 
-        async function enviarPedido(num, titulo, artista) {
+        async function enviar(num, titulo, artista) {
             const { error } = await _supabase
                 .from('Solicitudes')
                 .insert([{ 
@@ -215,21 +239,19 @@
                     estado: 'pendiente' 
                 }]);
 
-            if (error) alert('Error al enviar');
-            else alert('¡Pedido enviado con éxito!');
+            if (error) alert('Error al enviar pedido');
+            else alert('¡Enviado! Tu canción está en cola.');
         }
 
-        async function pedirFueraDeLista() {
-            const res = prompt("Escribe: ARTISTA - CANCIÓN");
-            if (res) {
-                const { error } = await _supabase
-                    .from('Solicitudes')
-                    .insert([{ 
-                        nombre_cancion: 'FUERA DE LISTA: ' + res, 
-                        artista: 'CLIENTE', 
-                        numero_cancion: 0,
-                        estado: 'pendiente' 
-                    }]);
+        async function pedirManual() {
+            const pedido = prompt("Ingresa: ARTISTA - NOMBRE DE CANCIÓN");
+            if (pedido) {
+                await _supabase.from('Solicitudes').insert([{ 
+                    nombre_cancion: 'SUGERENCIA: ' + pedido, 
+                    artista: 'MANUAL', 
+                    numero_cancion: 0,
+                    estado: 'pendiente' 
+                }]);
                 alert('Sugerencia enviada');
             }
         }
