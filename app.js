@@ -16,7 +16,7 @@ async function prepararPedido(number, artist, title) {
     let userName = localStorage.getItem('karaoke_user_name');
 
     if (!userName || userName.trim() === "") {
-        userName = prompt("¡Hola! ¿Cuál es tu nombre para anunciarte?");
+        userName = prompt("Tu nombre para la lista:");
         if (userName && userName.trim() !== "") {
             localStorage.setItem('karaoke_user_name', userName.trim());
         } else {
@@ -36,9 +36,9 @@ async function prepararPedido(number, artist, title) {
         ]);
 
     if (error) {
-        alert("Error de API: " + error.message);
+        alert("Error: " + error.message);
     } else {
-        alert("¡Recibido, " + userName + "! Tu canción ya está en lista.");
+        alert("¡Recibido! Tu canción ya está en la lista.");
     }
 }
 
@@ -62,12 +62,15 @@ function renderSongs(songs) {
 
     songs.forEach(song => {
         const row = document.createElement('tr');
+        const cleanArtist = song.artist.replace(/'/g, "\\'");
+        const cleanTitle = song.title.replace(/'/g, "\\'");
+        
         row.innerHTML = `
             <td>${song.number}</td>
             <td><strong>${song.artist}</strong></td>
             <td>${song.title}</td>
-            <td style="color:#aaa">${song.genre}</td>
-            <td><button class="btn-pedir" onclick="prepararPedido('${song.number}', '${song.artist.replace(/'/g, "\\'")}', '${song.title.replace(/'/g, "\\'")}')">PEDIR 📲</button></td>
+            <td style="color:#888">${song.genre}</td>
+            <td><button class="btn-pedir" onclick="prepararPedido('${song.number}', '${cleanArtist}', '${cleanTitle}')">PEDIR</button></td>
         `;
         fragment.appendChild(row);
     });

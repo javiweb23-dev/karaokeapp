@@ -1,7 +1,7 @@
 body {
     background-color: #000;
     color: #fff;
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
 }
@@ -13,7 +13,7 @@ body {
 }
 
 .logo {
-    max-width: 200px;
+    max-width: 180px;
 }
 
 .search-container {
@@ -22,16 +22,18 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 input, select {
     width: 100%;
-    padding: 12px;
+    padding: 12px 15px;
     margin-bottom: 10px;
     border-radius: 25px;
-    border: none;
+    border: 1px solid #ccc;
     font-size: 16px;
     box-sizing: border-box;
+    outline: none;
 }
 
 .custom-request button {
@@ -43,43 +45,53 @@ input, select {
     border-radius: 10px;
     font-weight: bold;
     cursor: pointer;
+    text-transform: uppercase;
 }
 
 .table-wrapper {
-    overflow-x: auto;
+    padding: 10px;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 10px;
 }
 
 th {
-    background-color: #222;
+    background-color: #1a1a1a;
     color: #ff6600;
     text-align: left;
-    padding: 10px;
+    padding: 12px;
+    font-size: 14px;
+    text-transform: uppercase;
 }
 
 td {
-    padding: 12px 10px;
-    border-bottom: 1px solid #333;
-    font-size: 14px;
+    padding: 15px 10px;
+    border-bottom: 1px solid #222;
+    font-size: 15px;
 }
 
 .btn-pedir {
     background-color: #ff6600;
     color: #000;
     border: none;
-    padding: 8px 12px;
+    padding: 10px 15px;
     border-radius: 5px;
     font-weight: bold;
     cursor: pointer;
-    white-space: nowrap;
+    width: 100%;
 }
 
 #loading, #noResults {
     text-align: center;
-    padding: 20px;
+    padding: 40px;
     color: #ff6600;
+    font-weight: bold;
+}
+
+@media (max-width: 600px) {
+    td { font-size: 13px; }
+    .btn-pedir { padding: 8px; font-size: 12px; }
 }
