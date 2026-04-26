@@ -3,132 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Karaoke Latino</title>
+    <title>Karaoke Latino</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="songs.js"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #121212;
-            color: white;
-            margin: 0;
-            padding: 15px;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        .header-logo {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .header-logo img {
-            max-width: 180px;
-            height: auto;
-        }
-        .filtros-idioma {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            justify-content: center;
-        }
-        .btn-filtro {
-            background-color: #2a2a2a;
-            color: #ccc;
-            border: 1px solid #444;
-            padding: 10px 18px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        .btn-filtro.active {
-            background-color: #ff6600;
-            color: white;
-            border-color: #ff6600;
-        }
-        #buscador {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            border: 1px solid #333;
-            background-color: #1e1e1e;
-            color: white;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        .table-wrapper {
-            width: 100%;
-            overflow-x: auto;
-            background-color: #1e1e1e;
-            border-radius: 10px;
-            border: 1px solid #333;
-            -webkit-overflow-scrolling: touch;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 700px;
-        }
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #333;
-            white-space: nowrap;
-        }
-        th {
-            background-color: #1a1a1a;
-            color: #ff6600;
-            font-size: 12px;
-            text-transform: uppercase;
-        }
-        .btn-pedir {
-            background-color: #ff6600;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .extra-options {
-            text-align: center;
-            margin: 40px 0;
-            padding: 30px;
-            border: 2px dashed #ff6600;
-            border-radius: 15px;
-            background-color: #1a1a1a;
-        }
-        .btn-especial {
-            background-color: #ff6600;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 18px;
-            margin-top: 15px;
-        }
+        body { font-family: sans-serif; background-color: #121212; color: white; margin: 0; padding: 10px; }
+        .container { max-width: 1000px; margin: auto; }
+        .logo-container { text-align: center; margin-bottom: 15px; }
+        .logo-container img { max-width: 150px; }
+        .filtros { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
+        .btn-filtro { background: #2a2a2a; color: #ccc; border: 1px solid #444; padding: 8px 16px; border-radius: 20px; cursor: pointer; }
+        .btn-filtro.active { background: #ff6600; color: white; border-color: #ff6600; }
+        #buscador { width: 100%; padding: 12px; margin-bottom: 15px; box-sizing: border-box; border-radius: 8px; border: 1px solid #333; background: #1e1e1e; color: white; }
+        .table-wrapper { width: 100%; overflow-x: auto; background: #1e1e1e; border-radius: 8px; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; min-width: 650px; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #333; white-space: nowrap; }
+        th { color: #ff6600; text-transform: uppercase; font-size: 12px; }
+        .col-pedir { width: 60px; }
+        .btn-pedir { background: #ff6600; color: white; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .seccion-especial { text-align: center; margin-top: 25px; padding: 20px; border: 2px dashed #ff6600; border-radius: 10px; background: #1a1a1a; }
+        .btn-especial { background: #ff6600; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; width: 100%; max-width: 400px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header-logo">
-            <img src="logo.png" alt="Logo">
+        <div class="logo-container"><img src="logo.png" alt="Logo"></div>
+        <div class="filtros">
+            <button class="btn-filtro active" onclick="setFiltro('Todos', this)">Todos</button>
+            <button class="btn-filtro" onclick="setFiltro('Español', this)">Español</button>
+            <button class="btn-filtro" onclick="setFiltro('Inglés', this)">Inglés</button>
         </div>
-        <div class="filtros-idioma">
-            <button class="btn-filtro active" onclick="cambiarFiltro('Todos', this)">Todos</button>
-            <button class="btn-filtro" onclick="cambiarFiltro('Español', this)">Español</button>
-            <button class="btn-filtro" onclick="cambiarFiltro('Inglés', this)">Inglés</button>
-        </div>
-        <input type="text" id="buscador" placeholder="Busca tu artista o canción..." onkeyup="filtrar()">
+        <input type="text" id="buscador" placeholder="Buscar artista o canción..." onkeyup="filtrar()">
         <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 80px;">Pedir</th>
+                        <th class="col-pedir">Pedir</th>
                         <th>Artista</th>
                         <th>Canción</th>
                         <th>Género</th>
@@ -138,74 +48,84 @@
                 <tbody id="lista-canciones"></tbody>
             </table>
         </div>
-        <div class="extra-options">
-            <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">¿NO ENCUENTRAS TU CANCIÓN?</div>
-            <div style="color: #888;">Si no está en la lista, pídela aquí manualmente:</div>
-            <button class="btn-especial" onclick="pedidoEspecial()">SOLICITAR CANCIÓN FUERA DE LISTA</button>
+        <div class="seccion-especial">
+            <h3 style="margin: 0 0 10px 0;">¿NO ENCUENTRAS TU CANCIÓN?</h3>
+            <p style="margin: 0 0 15px 0; color: #aaa;">Pídela manualmente y el DJ la buscará</p>
+            <button class="btn-especial" onclick="pedirFueraLista()">SOLICITAR CANCIÓN FUERA DE LISTA</button>
         </div>
     </div>
     <script>
         const SUPABASE_URL = 'https://mefrjbmjfdphdqndpzcw.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        let currentLang = 'Todos';
-        function render(data) {
-            const tbody = document.getElementById('lista-canciones');
-            tbody.innerHTML = '';
-            data.forEach(s => {
+        let fIdioma = 'Todos';
+
+        function render(datos) {
+            const tb = document.getElementById('lista-canciones');
+            tb.innerHTML = '';
+            datos.forEach(s => {
                 const tr = document.createElement('tr');
-                const tdBtn = document.createElement('td');
-                const btn = document.createElement('button');
-                btn.className = 'btn-pedir';
-                btn.innerText = 'Pedir';
-                btn.onclick = () => enviarPedido(s.number, s.title, s.artist);
-                tdBtn.appendChild(btn);
-                const tdArt = document.createElement('td');
-                tdArt.textContent = s.artist;
-                const tdCan = document.createElement('td');
-                tdCan.textContent = s.title;
-                const tdGen = document.createElement('td');
-                tdGen.style.color = '#888';
-                tdGen.textContent = s.genre;
-                const tdNum = document.createElement('td');
-                tdNum.style.color = '#555';
-                tdNum.textContent = '#' + s.number;
-                tr.appendChild(tdBtn);
-                tr.appendChild(tdArt);
-                tr.appendChild(tdCan);
-                tr.appendChild(tdGen);
-                tr.appendChild(tdNum);
-                tbody.appendChild(tr);
+                
+                const tdP = document.createElement('td');
+                const b = document.createElement('button');
+                b.className = 'btn-pedir';
+                b.innerText = 'Pedir';
+                b.onclick = function() { solicitar(s.number, s.title, s.artist); };
+                tdP.appendChild(b);
+                
+                const tdA = document.createElement('td');
+                tdA.innerText = s.artist;
+                const tdC = document.createElement('td');
+                tdC.innerText = s.title;
+                const tdG = document.createElement('td');
+                tdG.style.color = '#888';
+                tdG.innerText = s.genre;
+                const tdN = document.createElement('td');
+                tdN.style.color = '#555';
+                tdN.innerText = '#' + s.number;
+                
+                tr.appendChild(tdP);
+                tr.appendChild(tdA);
+                tr.appendChild(tdC);
+                tr.appendChild(tdG);
+                tr.appendChild(tdN);
+                tb.appendChild(tr);
             });
         }
+
         function filtrar() {
-            const query = document.getElementById('buscador').value.toLowerCase();
-            const result = songsDatabase.filter(s => {
-                const textMatch = s.artist.toLowerCase().includes(query) || s.title.toLowerCase().includes(query);
-                const langMatch = currentLang === 'Todos' || s.language === currentLang;
-                return textMatch && langMatch;
+            const b = document.getElementById('buscador').value.toLowerCase();
+            const res = songsDatabase.filter(s => {
+                const mTxt = s.artist.toLowerCase().includes(b) || s.title.toLowerCase().includes(b);
+                const mLng = fIdioma === 'Todos' || s.language === fIdioma;
+                return mTxt && mLng;
             });
-            render(result);
+            render(res);
         }
-        function cambiarFiltro(lang, el) {
-            currentLang = lang;
-            document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
+
+        function setFiltro(i, e) {
+            fIdioma = i;
+            document.querySelectorAll('.btn-filtro').forEach(btn => btn.classList.remove('active'));
+            e.classList.add('active');
             filtrar();
         }
-        async function enviarPedido(num, titulo, artista) {
-            const { error } = await _supabase.from('Solicitudes').insert([{ numero_cancion: num, nombre_cancion: titulo, artista: artista, estado: 'pendiente' }]);
-            if (error) alert('Error al enviar');
-            else alert('¡Pedido enviado!');
+
+        async function solicitar(n, t, a) {
+            const { error } = await _supabase.from('Solicitudes').insert([{ numero_cancion: n, nombre_cancion: t, artista: a, estado: 'pendiente' }]);
+            if (error) alert('Error al pedir. Verifica tu conexión.');
+            else alert('¡Canción pedida con éxito!');
         }
-        async function pedidoEspecial() {
-            const res = prompt("Escribe: ARTISTA - CANCIÓN");
-            if (res) {
-                const { error } = await _supabase.from('Solicitudes').insert([{ nombre_cancion: 'FUERA DE LISTA: ' + res, artista: 'CLIENTE', numero_cancion: 0, estado: 'pendiente' }]);
-                if (error) alert('Error');
-                else alert('Sugerencia enviada correctamente');
-            }
+
+        async function pedirFueraLista() {
+            const a = prompt("Escribe el nombre del ARTISTA:");
+            if(!a) return;
+            const c = prompt("Escribe el nombre de la CANCIÓN:");
+            if(!c) return;
+            const { error } = await _supabase.from('Solicitudes').insert([{ nombre_cancion: 'EXTRA: ' + c, artista: a, numero_cancion: 0, estado: 'pendiente' }]);
+            if(error) alert('Error al enviar la sugerencia.');
+            else alert('Sugerencia enviada directamente al DJ.');
         }
+
         render(songsDatabase);
     </script>
 </body>
