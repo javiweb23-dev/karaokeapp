@@ -34,6 +34,21 @@
     .info small { color: #888; }
     .info strong { color: #ff6600; font-size: 1.2em; }
     .info span { display: block; margin-top: 5px; font-size: 1.1em; }
+    .btn-avisar {
+        background: #17a2b8;
+        color: white;
+        border: none;
+        padding: 15px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+    .btn-avisar:disabled {
+        background: #444;
+        color: #888;
+        cursor: not-allowed;
+    }
     .btn-aprobar {
         background: #28a745;
         color: white;
@@ -51,8 +66,9 @@
         margin-left: 10px;
         border-radius: 5px;
         cursor: pointer;
+        font-weight: bold;
     }
-</style>
+    </style>
 </head>
 <body>
     <div class="header">
@@ -73,7 +89,7 @@
             const { data, error } = await _supabase
                 .from('Solicitudes')
                 .select('*')
-                .eq('estado', 'pendiente')
+                .in('estado', ['pendiente', 'preparate'])
                 .order('created_at', { ascending: true });
 
             if (error) return;
@@ -84,19 +100,33 @@
             data.forEach(pedido => {
                 const div = document.createElement('div');
                 div.className = 'pedido-card';
+                
+                const textoAvisar = pedido.estado === 'preparate' ? 'AVISADO ✓' : 'AVISAR';
+                const estadoAvisar = pedido.estado === 'preparate' ? 'disabled' : '';
+
                 div.innerHTML = `
-                    <div>
+                    <div class="info">
                         <small>${new Date(pedido.created_at).toLocaleTimeString()}</small><br>
                         <strong>${pedido.nombre_usuario}</strong> pide:<br>
                         <span>${pedido.cancion_info} (#${pedido.numero_cancion})</span>
                     </div>
                     <div>
+                        <button class="btn-avisar" onclick="avisarPedido(${pedido.id})" ${estadoAvisar}>${textoAvisar}</button>
                         <button class="btn-aprobar" onclick="aprobarPedido(${pedido.id})">APROBAR</button>
                         <button class="btn-eliminar" onclick="eliminarPedido(${pedido.id})">X</button>
                     </div>
                 `;
                 contenedor.appendChild(div);
             });
+        }
+
+        async function avisarPedido(id) {
+            const { error } = await _supabase
+                .from('Solicitudes')
+                .update({ estado: 'preparate' })
+                .eq('id', id);
+
+            if (!error) cargarPedidos();
         }
 
         async function aprobarPedido(id) {

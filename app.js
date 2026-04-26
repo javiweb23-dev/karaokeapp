@@ -1,17 +1,3 @@
-const SUPABASE_URL = 'https://mefrjbmjfdphdqndpzcw.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
-const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-let allSongs = [];
-
-document.addEventListener('DOMContentLoaded', () => {
-    if (typeof songsDatabase !== 'undefined') {
-        allSongs = [...songsDatabase];
-        applyFilters();
-    }
-    setupEventListeners();
-});
-
 async function prepararPedido(number, artist, title) {
     let userName = localStorage.getItem('karaoke_user_name');
 
@@ -24,7 +10,8 @@ async function prepararPedido(number, artist, title) {
         }
     }
 
-    const { error } = await _supabase
+    // El .select() al final es vital: nos devuelve el ID exacto que Supabase le dio a esta canción
+    const { data, error } = await _supabase
         .from('Solicitudes')
         .insert([
             { 
@@ -33,75 +20,38 @@ async function prepararPedido(number, artist, title) {
                 numero_cancion: number.toString(),
                 estado: 'pendiente' 
             }
-        ]);
+        ])
+        .select();
 
     if (error) {
         alert("Error: " + error.message);
     } else {
-        alert("¡Recibido! Tu canción ya está en la lista.");
+        alert("¡Recibido! Tu canción ya está en la lista. Mantén esta página abierta para avisarte cuando te toque.");
+
+        // === INICIO DE LA MAGIA DEL AVISO ===
+        // Si el pedido se guardó bien, activamos el "radar" en el teléfono del cliente
+        if (data && data.length > 0) {
+            const idUnico = data[0].id; // Tomamos el ID de la base de datos
+
+            _supabase
+                .channel('radar-cancion-' + idUnico)
+                .on(
+                    'postgres_changes',
+                    { 
+                        event: 'UPDATE', 
+                        schema: 'public', 
+                        table: 'Solicitudes',
+                        filter: `id=eq.${idUnico}` // Solo escuchamos cambios de ESTA canción
+                    },
+                    (payload) => {
+                        // Si el DJ cambia manualmente el estado a 'preparate'
+                        if (payload.new.estado === 'preparate') {
+                            alert(`🎤 ¡PREPÁRATE ${userName.toUpperCase()}!\n\nTu canción "${title}" es la siguiente.\n\n¡Ve acercándote al DJ!`);
+                        }
+                    }
+                )
+                .subscribe();
+        }
+        // === FIN DE LA MAGIA ===
     }
-}
-
-function renderSongs(songs) {
-    const tbody = document.getElementById('songsTableBody');
-    const loading = document.getElementById('loading');
-    const noResults = document.getElementById('noResults');
-    
-    if (loading) loading.style.display = 'none';
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-
-    if (songs.length === 0) {
-        if (noResults) noResults.style.display = 'block';
-        return;
-    }
-    if (noResults) noResults.style.display = 'none';
-
-    const fragment = document.createDocumentFragment();
-
-    songs.forEach(song => {
-        const row = document.createElement('tr');
-        const cleanArtist = song.artist.replace(/'/g, "\\'");
-        const cleanTitle = song.title.replace(/'/g, "\\'");
-        
-        row.innerHTML = `
-            <td><button class="btn-pedir" onclick="prepararPedido('${song.number}', '${cleanArtist}', '${cleanTitle}')">PEDIR</button></td>
-            <td><strong>${song.artist}</strong></td>
-            <td>${song.title}</td>
-            <td style="color:#888">${song.genre}</td>
-        `;
-        fragment.appendChild(row);
-    });
-    
-    tbody.appendChild(fragment);
-}
-
-function applyFilters() {
-    const searchInput = document.getElementById('searchInput');
-    const langFilter = document.getElementById('languageFilter');
-    
-    const term = searchInput ? searchInput.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
-    const lang = langFilter ? langFilter.value.toLowerCase() : "";
-
-    const filtered = allSongs.filter(s => {
-        const matchLang = lang === "" || s.language.toLowerCase().includes(lang);
-        const cleanA = s.artist.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const cleanT = s.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        
-        const matchSearch = term === "" || 
-                            cleanA.includes(term) || 
-                            cleanT.includes(term) || 
-                            s.number.toString().includes(term);
-                            
-        return matchLang && matchSearch;
-    });
-    renderSongs(filtered);
-}
-
-function setupEventListeners() {
-    const searchInput = document.getElementById('searchInput');
-    const langFilter = document.getElementById('languageFilter');
-    if (searchInput) searchInput.addEventListener('input', applyFilters);
-    if (langFilter) langFilter.addEventListener('change', applyFilters);
 }
