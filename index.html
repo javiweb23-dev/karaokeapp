@@ -20,20 +20,32 @@
             margin: 0 auto;
         }
 
+        /* LOGO RESTAURADO */
         .header-logo {
             text-align: center;
             margin-bottom: 20px;
         }
-
         .header-logo img {
             max-width: 180px;
             height: auto;
         }
 
+        #buscador {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            background-color: #1e1e1e;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
         .filtros-idioma {
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             justify-content: center;
         }
 
@@ -54,18 +66,7 @@
             border-color: #ff6600;
         }
 
-        #buscador {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            border: 1px solid #333;
-            background-color: #1e1e1e;
-            color: white;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-
+        /* FORMATO DE TABLA CON SCROLL LATERAL */
         .table-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -78,7 +79,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 650px;
+            min-width: 650px; /* Para que se entienda que hay que mover a un lado */
         }
 
         th, td {
@@ -105,23 +106,31 @@
             cursor: pointer;
         }
 
+        /* PUNTO 1: BOTÓN DE CANCIÓN FUERA DE LISTA */
         .extra-options {
             text-align: center;
             margin-top: 30px;
-            padding: 20px;
-            border: 2px dashed #333;
-            border-radius: 10px;
+            padding: 25px;
+            border: 2px dashed #444;
+            border-radius: 12px;
+            background-color: #1a1a1a;
         }
 
         .btn-especial {
             background-color: transparent;
             color: #ff6600;
-            border: 1px solid #ff6600;
-            padding: 12px 20px;
+            border: 2px solid #ff6600;
+            padding: 12px 25px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
-            margin-top: 10px;
+            margin-top: 15px;
+            font-size: 16px;
+        }
+
+        .btn-especial:active {
+            background-color: #ff6600;
+            color: white;
         }
     </style>
 </head>
@@ -138,7 +147,7 @@
             <button class="btn-filtro" onclick="cambiarIdioma('Inglés', this)">Inglés</button>
         </div>
 
-        <input type="text" id="buscador" placeholder="Busca tu artista o canción..." onkeyup="ejecutarFiltro()">
+        <input type="text" id="buscador" placeholder="Busca por artista o canción..." onkeyup="ejecutarFiltro()">
 
         <div class="table-wrapper">
             <table>
@@ -156,8 +165,8 @@
         </div>
 
         <div class="extra-options">
-            <div style="color: #aaa; margin-bottom: 10px;">¿No encuentras tu canción?</div>
-            <button class="btn-especial" onclick="pedirManual()">Pedir canción fuera de lista</button>
+            <div style="color: #aaa; font-size: 15px;">¿No encuentras lo que buscas en la lista?</div>
+            <button class="btn-especial" onclick="pedirManual()">PEDIR CANCIÓN FUERA DE LISTA</button>
         </div>
     </div>
 
@@ -166,15 +175,16 @@
         const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let idiomaFiltro = 'Todos';
+        let filtroActual = 'Todos';
 
-        function render(canciones) {
+        function render(datos) {
             const listado = document.getElementById('lista-canciones');
             listado.innerHTML = '';
 
-            canciones.forEach(s => {
+            datos.forEach(s => {
                 const tr = document.createElement('tr');
                 
+                // Botón Pedir (Creación por objeto para evitar errores de comillas)
                 const tdBtn = document.createElement('td');
                 const btn = document.createElement('button');
                 btn.className = 'btn-pedir';
@@ -207,17 +217,17 @@
         }
 
         function ejecutarFiltro() {
-            const texto = document.getElementById('buscador').value.toLowerCase();
+            const busqueda = document.getElementById('buscador').value.toLowerCase();
             const filtradas = songsDatabase.filter(s => {
-                const matchTexto = s.artist.toLowerCase().includes(texto) || s.title.toLowerCase().includes(texto);
-                const matchIdioma = (idiomaFiltro === 'Todos' || s.language === idiomaFiltro);
+                const matchTexto = s.artist.toLowerCase().includes(busqueda) || s.title.toLowerCase().includes(busqueda);
+                const matchIdioma = (filtroActual === 'Todos' || s.language === filtroActual);
                 return matchTexto && matchIdioma;
             });
             render(filtradas);
         }
 
         function cambiarIdioma(idioma, el) {
-            idiomaFiltro = idioma;
+            filtroActual = idioma;
             document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
             ejecutarFiltro();
@@ -234,27 +244,26 @@
                 }]);
 
             if (error) {
-                alert('Error al enviar');
+                alert('Error al enviar pedido. Intenta de nuevo.');
             } else {
                 alert('¡Canción pedida con éxito!');
             }
         }
 
+        // LÓGICA DEL BOTÓN ESPECIAL
         async function pedirManual() {
-            const art = prompt("Artista:");
-            if (!art) return;
-            const can = prompt("Canción:");
-            if (!can) return;
-
-            const { error } = await _supabase.from('Solicitudes').insert([{ 
-                nombre_cancion: 'MANUAL: ' + can, 
-                artista: art, 
-                numero_cancion: 0,
-                estado: 'pendiente' 
-            }]);
-
-            if (error) alert('Error al enviar sugerencia');
-            else alert('Sugerencia enviada correctamente');
+            const respuesta = prompt("Escribe el NOMBRE DEL ARTISTA y el TÍTULO DE LA CANCIÓN:");
+            if (respuesta) {
+                const { error } = await _supabase.from('Solicitudes').insert([{ 
+                    nombre_cancion: 'FUERA DE LISTA: ' + respuesta, 
+                    artista: 'PEDIDO ESPECIAL', 
+                    numero_cancion: 0,
+                    estado: 'pendiente' 
+                }]);
+                
+                if (error) alert('Error al enviar');
+                else alert('Tu sugerencia ha sido enviada al DJ.');
+            }
         }
 
         render(songsDatabase);
