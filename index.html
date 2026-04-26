@@ -3,46 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Karaoke Latino</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Mi Karaoke Latino - Pedidos</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="songs.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ff6600;
+        }
+
+        #buscador {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background-color: #1e1e1e;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th, td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: #1e1e1e;
+            color: #ff6600;
+        }
+
+        .col-btn { width: 80px; }
+        .col-artista { width: 35%; }
+        .col-cancion { width: 45%; }
+        .col-extra { width: 20%; }
+
+        .btn-pedir {
+            background-color: #ff6600;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-pedir:active {
+            transform: scale(0.95);
+            background-color: #e65c00;
+        }
+
+        @media (max-width: 600px) {
+            .desktop-only {
+                display: none;
+            }
+            .col-artista { width: 40%; }
+            .col-cancion { width: 40%; }
+            .col-btn { width: 70px; }
+            
+            td, th {
+                font-size: 14px;
+                padding: 10px 5px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="header">
-        <img src="logo.png" alt="Logo" class="logo">
-    </div>
 
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="BUSCAR POR TÍTULO, ARTISTA O NÚMERO...">
-        <select id="languageFilter">
-            <option value="">TODOS LOS IDIOMAS</option>
-            <option value="español">Español</option>
-            <option value="inglés">Inglés</option>
-        </select>
-        <div class="custom-request">
-            <button onclick="window.open('https://wa.me/tu_numero', '_blank')">¿No encuentras tu tema? Pídelo aquí 📲</button>
-        </div>
-    </div>
+    <div class="container">
+        <h1>Karaoke Latino</h1>
+        
+        <input type="text" id="buscador" placeholder="Busca por artista o canción..." onkeyup="filtrar()">
 
-    <div id="loading">Cargando canciones...</div>
-    <div id="noResults" style="display:none;">No se encontraron resultados</div>
-
-    <div class="table-wrapper">
-        <table id="songsTable">
+        <table>
             <thead>
                 <tr>
-                    <th>#</th>
-                    <th>Artista</th>
-                    <th>Título</th>
-                    <th>Género</th>
-                    <th>Acción</th>
+                    <th class="col-btn">Pedir</th>
+                    <th class="col-artista">Artista</th>
+                    <th class="col-cancion">Canción</th>
+                    <th class="col-extra desktop-only">Género</th>
+                    <th class="col-extra desktop-only">Número</th>
                 </tr>
             </thead>
-            <tbody id="songsTableBody"></tbody>
+            <tbody id="lista-canciones"></tbody>
         </table>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="songs.js"></script>
-    <script src="app.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://mefrjbmjfdphdqndpzcw.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function renderizar(canciones) {
+            const tbody = document.getElementById('lista-canciones');
+            tbody.innerHTML = '';
+
+            canciones.forEach(song => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="col-btn">
+                        <button class="btn-pedir" onclick="solicitar(${song.number}, '${song.title.replace(/'/g, "\\'")}', '${song.artist.replace(/'/g, "\\'")}')">Pedir</button>
+                    </td>
+                    <td class="col-artista">${song.artist}</td>
+                    <td class="col-cancion">${song.title}</td>
+                    <td class="col-extra desktop-only">${song.genre}</td>
+                    <td class="col-extra desktop-only">#${song.number}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function filtrar() {
+            const termino = document.getElementById('buscador').value.toLowerCase();
+            const filtradas = songsDatabase.filter(s => 
+                s.artist.toLowerCase().includes(termino) || 
+                s.title.toLowerCase().includes(termino)
+            );
+            renderizar(filtradas);
+        }
+
+        async function solicitar(numero, titulo, artista) {
+            const { error } = await _supabase
+                .from('Solicitudes')
+                .insert([
+                    { 
+                        numero_cancion: numero, 
+                        nombre_cancion: titulo, 
+                        artista: artista,
+                        estado: 'pendiente'
+                    }
+                ]);
+
+            if (error) {
+                alert('Error al enviar pedido');
+            } else {
+                alert('¡Canción pedida con éxito!');
+            }
+        }
+
+        renderizar(songsDatabase);
+    </script>
 </body>
 </html>
