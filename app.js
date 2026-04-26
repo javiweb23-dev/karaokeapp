@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
 });
 
-// FUNCIÓN PARA CREAR UNA ALERTA ELEGANTE Y SALTARSE EL AVISO DEL NAVEGADOR
+// FUNCIÓN DE ALERTA ELEGANTE
 function mostrarAlertaElegante(mensaje) {
     const modal = document.createElement('div');
     modal.style.position = 'fixed';
@@ -41,11 +41,11 @@ function mostrarAlertaElegante(mensaje) {
     title.style.margin = '0 0 15px 0';
 
     const text = document.createElement('p');
-    text.style.wordBreak = 'break-word';
     text.innerText = mensaje;
     text.style.whiteSpace = 'pre-line'; // Respeta los saltos de línea
     text.style.fontSize = '16px';
     text.style.lineHeight = '1.5';
+    text.style.wordBreak = 'break-word'; // Evita que los textos largos se corten en los bordes
 
     const btn = document.createElement('button');
     btn.innerText = 'ACEPTAR';
@@ -92,9 +92,10 @@ async function prepararPedido(number, artist, title) {
         .select();
 
     if (error) {
-        alert("Error: " + error.message);
+        mostrarAlertaElegante("❌ Error: " + error.message);
     } else {
-        alert("¡Recibido! Tu canción ya está en la lista. Mantén esta página abierta para avisarte cuando te toque.");
+        // MENSAJE DE "RECIBIDO" AHORA ES ELEGANTE
+        mostrarAlertaElegante("✅ ¡Recibido!\n\nTu canción ya está en la lista.\n\nMantén esta página abierta para avisarte cuando te toque cantar.");
 
         if (data && data.length > 0) {
             const idUnico = data[0].id;
@@ -111,7 +112,6 @@ async function prepararPedido(number, artist, title) {
                     },
                     (payload) => {
                         if (payload.new.estado === 'preparate') {
-                            // AQUÍ ESTÁ EL TEXTO NUEVO Y LA ALERTA PERSONALIZADA
                             mostrarAlertaElegante(`¡PREPÁRATE ${userName.toUpperCase()}!\n\nTu canción "${title}" es la siguiente.\n\nPendiente, puedes levantar la mano para ubicarte y que te lleven el micrófono.`);
                         }
                     }
