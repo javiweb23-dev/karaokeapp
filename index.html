@@ -16,7 +16,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -26,13 +26,13 @@
         }
 
         .header-logo img {
-            max-width: 160px;
+            max-width: 180px;
             height: auto;
         }
 
         .filtros-idioma {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             margin-bottom: 15px;
             justify-content: center;
         }
@@ -41,11 +41,10 @@
             background-color: #2a2a2a;
             color: #ccc;
             border: 1px solid #444;
-            padding: 10px 15px;
-            border-radius: 20px;
+            padding: 10px 20px;
+            border-radius: 25px;
             cursor: pointer;
-            font-size: 13px;
-            font-weight: bold;
+            font-size: 14px;
         }
 
         .btn-filtro.active {
@@ -66,7 +65,6 @@
             box-sizing: border-box;
         }
 
-        /* ESTO PERMITE EL MOVIMIENTO LATERAL */
         .table-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -79,14 +77,13 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 700px; /* Fuerza el scroll para que se vea todo */
         }
 
         th, td {
             padding: 15px;
             text-align: left;
             border-bottom: 1px solid #333;
-            white-space: nowrap; /* Evita que el texto salte de línea */
+            white-space: nowrap;
         }
 
         th {
@@ -145,11 +142,11 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 100px;">Pedir</th>
                         <th>Artista</th>
                         <th>Canción</th>
                         <th>Género</th>
                         <th>#</th>
+                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody id="lista-canciones"></tbody>
@@ -157,7 +154,7 @@
         </div>
 
         <div class="extra-options">
-            <div style="color: #888;">¿No encuentras lo que buscas?</div>
+            <div style="color: #888;">¿No encuentras tu canción?</div>
             <button class="btn-especial" onclick="pedirManual()">Pedir canción fuera de lista</button>
         </div>
     </div>
@@ -176,37 +173,32 @@
             canciones.forEach(s => {
                 const tr = document.createElement('tr');
 
-                // Columna Botón (Creación segura sin comillas)
-                const tdBtn = document.createElement('td');
-                const btn = document.createElement('button');
-                btn.className = 'btn-pedir';
-                btn.innerText = 'Pedir';
-                btn.onclick = () => enviar(s.number, s.title, s.artist);
-                tdBtn.appendChild(btn);
-
-                // Columna Artista
                 const tdArtista = document.createElement('td');
                 tdArtista.innerText = s.artist;
 
-                // Columna Canción
                 const tdTitulo = document.createElement('td');
                 tdTitulo.innerText = s.title;
 
-                // Columna Género
                 const tdGenero = document.createElement('td');
                 tdGenero.style.color = '#888';
                 tdGenero.innerText = s.genre;
 
-                // Columna Número
                 const tdNum = document.createElement('td');
                 tdNum.style.color = '#555';
                 tdNum.innerText = s.number;
 
-                tr.appendChild(tdBtn);
+                const tdAccion = document.createElement('td');
+                const btn = document.createElement('button');
+                btn.className = 'btn-pedir';
+                btn.innerText = 'Pedir';
+                btn.onclick = () => enviarPedido(s.number, s.title, s.artist);
+                tdAccion.appendChild(btn);
+
                 tr.appendChild(tdArtista);
                 tr.appendChild(tdTitulo);
                 tr.appendChild(tdGenero);
                 tr.appendChild(tdNum);
+                tr.appendChild(tdAccion);
 
                 listado.appendChild(tr);
             });
@@ -229,7 +221,7 @@
             filtrar();
         }
 
-        async function enviar(num, titulo, artista) {
+        async function enviarPedido(num, titulo, artista) {
             const { error } = await _supabase
                 .from('Solicitudes')
                 .insert([{ 
@@ -239,21 +231,28 @@
                     estado: 'pendiente' 
                 }]);
 
-            if (error) alert('Error al enviar pedido');
-            else alert('¡Enviado! Tu canción está en cola.');
+            if (error) {
+                alert('Error al enviar pedido. Revisa tu conexión.');
+            } else {
+                alert('¡Canción enviada con éxito!');
+            }
         }
 
         async function pedirManual() {
-            const pedido = prompt("Ingresa: ARTISTA - NOMBRE DE CANCIÓN");
-            if (pedido) {
-                await _supabase.from('Solicitudes').insert([{ 
-                    nombre_cancion: 'SUGERENCIA: ' + pedido, 
-                    artista: 'MANUAL', 
-                    numero_cancion: 0,
-                    estado: 'pendiente' 
-                }]);
-                alert('Sugerencia enviada');
-            }
+            const art = prompt("Nombre del Artista:");
+            if (!art) return;
+            const can = prompt("Nombre de la Canción:");
+            if (!can) return;
+
+            const { error } = await _supabase.from('Solicitudes').insert([{ 
+                nombre_cancion: 'MANUAL: ' + can, 
+                artista: art, 
+                numero_cancion: 0,
+                estado: 'pendiente' 
+            }]);
+
+            if (error) alert('Error al enviar sugerencia');
+            else alert('Sugerencia enviada correctamente');
         }
 
         render(songsDatabase);
