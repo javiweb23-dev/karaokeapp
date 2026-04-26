@@ -3,50 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Karaoke Latino - Pedidos</title>
+    <title>Mi Karaoke Latino</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="songs.js"></script>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: #121212;
             color: white;
             margin: 0;
-            padding: 15px;
+            padding: 10px;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 100%;
             margin: 0 auto;
         }
 
-        /* LOGO */
         .header-logo {
             text-align: center;
-            margin-bottom: 20px;
-        }
-        .header-logo img {
-            max-width: 180px; /* Ajusta según el tamaño de tu logo */
-            height: auto;
+            margin-bottom: 15px;
         }
 
-        /* BUSCADOR Y FILTROS */
-        #buscador {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            border: 1px solid #333;
-            background-color: #1e1e1e;
-            color: white;
-            font-size: 16px;
-            box-sizing: border-box;
+        .header-logo img {
+            max-width: 150px;
+            height: auto;
         }
 
         .filtros-idioma {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             justify-content: center;
         }
 
@@ -54,8 +41,8 @@
             background-color: #2a2a2a;
             color: #ccc;
             border: 1px solid #444;
-            padding: 8px 15px;
-            border-radius: 20px;
+            padding: 8px 12px;
+            border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
         }
@@ -66,77 +53,77 @@
             border-color: #ff6600;
         }
 
-        /* TABLA CON SCROLL LATERAL */
+        #buscador {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background-color: #1e1e1e;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
         .table-wrapper {
             width: 100%;
-            overflow-x: auto; /* Permite mover a un lado */
+            overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            border-radius: 10px;
             background-color: #1e1e1e;
-            margin-bottom: 20px;
+            border-radius: 8px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 500px; /* Fuerza el scroll en móviles */
+            table-layout: auto;
         }
 
         th, td {
-            padding: 12px 15px;
+            padding: 12px 10px;
             text-align: left;
             border-bottom: 1px solid #333;
-            white-space: nowrap; /* Evita que el texto salte de línea */
+            white-space: nowrap;
         }
 
         th {
             background-color: #1a1a1a;
             color: #ff6600;
-            font-size: 13px;
+            font-size: 12px;
             text-transform: uppercase;
         }
-
-        /* BOTÓN PEDIR FIJO (Opcional: puedes hacerlo sticky si quieres que no se mueva) */
-        .col-btn {
-            width: 80px;
-            position: sticky;
-            left: 0;
-            background-color: #1e1e1e;
-            z-index: 2;
-        }
-        
-        th.col-btn { background-color: #1a1a1a; z-index: 3; }
 
         .btn-pedir {
             background-color: #ff6600;
             color: white;
             border: none;
-            padding: 8px 12px;
+            padding: 10px 15px;
             border-radius: 5px;
             font-weight: bold;
             cursor: pointer;
         }
 
-        /* BOTÓN CANCIÓN NO ENCONTRADA */
+        .btn-pedir:active {
+            transform: scale(0.95);
+        }
+
         .extra-options {
             text-align: center;
-            margin-top: 30px;
-            padding: 20px;
-            background: #1e1e1e;
-            border-radius: 10px;
+            margin-top: 25px;
+            padding: 15px;
             border: 1px dashed #444;
+            border-radius: 8px;
         }
 
         .btn-especial {
             background-color: transparent;
             color: #ff6600;
             border: 1px solid #ff6600;
-            padding: 10px 20px;
-            border-radius: 8px;
+            padding: 10px 15px;
+            border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
-            text-decoration: none;
-            display: inline-block;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -144,7 +131,7 @@
 
     <div class="container">
         <div class="header-logo">
-            <img src="logo.png" alt="Mi Karaoke Latino">
+            <img src="logo.png" alt="Logo">
         </div>
         
         <div class="filtros-idioma">
@@ -153,13 +140,13 @@
             <button class="btn-filtro" onclick="filtrarIdioma('Inglés', this)">Inglés</button>
         </div>
 
-        <input type="text" id="buscador" placeholder="Busca tu artista o canción..." onkeyup="filtrar()">
+        <input type="text" id="buscador" placeholder="Buscar artista o canción..." onkeyup="filtrar()">
 
         <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
-                        <th class="col-btn">Pedir</th>
+                        <th>Pedir</th>
                         <th>Artista</th>
                         <th>Canción</th>
                         <th>Género</th>
@@ -171,8 +158,8 @@
         </div>
 
         <div class="extra-options">
-            <p style="color: #888;">¿No encuentras lo que buscas?</p>
-            <button class="btn-especial" onclick="pedirEspecial()">Sugerir canción que no está en la lista</button>
+            <div style="color: #888; font-size: 14px;">¿No está tu canción?</div>
+            <button class="btn-especial" onclick="pedirEspecial()">Pedir canción fuera de lista</button>
         </div>
     </div>
 
@@ -190,8 +177,8 @@
             canciones.forEach(song => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="col-btn">
-                        <button class="btn-pedir" onclick="solicitar(${song.number}, '${song.title.replace(/'/g, "\\'")}', '${song.artist.replace(/'/g, "\\'")}')">Pedir</button>
+                    <td>
+                        <button class="btn-pedir" onclick="solicitar(${song.number}, \`${song.title.replace(/`/g, '\\`').replace(/'/g, "\\'")}\`, \`${song.artist.replace(/`/g, '\\`').replace(/'/g, "\\'")}\`)">Pedir</button>
                     </td>
                     <td>${song.artist}</td>
                     <td>${song.title}</td>
@@ -222,18 +209,37 @@
         async function solicitar(numero, titulo, artista) {
             const { error } = await _supabase
                 .from('Solicitudes')
-                .insert([{ numero_cancion: numero, nombre_cancion: titulo, artista: artista, estado: 'pendiente' }]);
+                .insert([{ 
+                    numero_cancion: numero, 
+                    nombre_cancion: titulo, 
+                    artista: artista, 
+                    estado: 'pendiente' 
+                }]);
 
-            if (error) alert('Error al enviar');
-            else alert('¡Enviada! Espera tu turno.');
+            if (error) {
+                alert('Error al enviar');
+            } else {
+                alert('¡Canción enviada!');
+            }
         }
 
-        function pedirEspecial() {
-            const sugerencia = prompt("Escribe el nombre de la canción y el artista que quieres:");
-            if (sugerencia) {
-                _supabase.from('Solicitudes').insert([{ nombre_cancion: 'SUGERENCIA: ' + sugerencia, artista: 'EXTERNO', estado: 'pendiente' }]);
-                alert("Gracias, intentaremos buscarla por ti.");
-            }
+        async function pedirEspecial() {
+            const cancion = prompt("Nombre de la canción:");
+            if (!cancion) return;
+            const artista = prompt("Nombre del artista:");
+            if (!artista) return;
+
+            const { error } = await _supabase
+                .from('Solicitudes')
+                .insert([{ 
+                    nombre_cancion: 'ESPECIAL: ' + cancion, 
+                    artista: artista, 
+                    numero_cancion: 0,
+                    estado: 'pendiente' 
+                }]);
+
+            if (error) alert('Error al enviar sugerencia');
+            else alert('Sugerencia enviada correctamente');
         }
 
         renderizar(songsDatabase);
