@@ -31,9 +31,7 @@ function mostrarAlertaElegante(mensaje) {
     box.style.borderRadius = '12px';
     box.style.border = '2px solid #ff6600';
     box.style.textAlign = 'center';
-    box.style.width = '85%'; 
-    box.style.maxWidth = '400px'; 
-    box.style.boxSizing = 'border-box'; // <--- ESTA LÍNEA EVITA EL DESCUADRE
+    box.style.maxWidth = '85%';
     box.style.color = 'white';
     box.style.boxShadow = '0 10px 25px rgba(255, 102, 0, 0.2)';
 
@@ -43,7 +41,6 @@ function mostrarAlertaElegante(mensaje) {
     title.style.margin = '0 0 15px 0';
 
     const text = document.createElement('p');
-    
     text.innerText = mensaje;
     text.style.whiteSpace = 'pre-line'; // Respeta los saltos de línea
     text.style.fontSize = '16px';
