@@ -66,11 +66,10 @@ function renderSongs(songs) {
         const cleanTitle = song.title.replace(/'/g, "\\'");
         
         row.innerHTML = `
-            <td>${song.number}</td>
+            <td><button class="btn-pedir" onclick="prepararPedido('${song.number}', '${cleanArtist}', '${cleanTitle}')">PEDIR</button></td>
             <td><strong>${song.artist}</strong></td>
             <td>${song.title}</td>
             <td style="color:#888">${song.genre}</td>
-            <td><button class="btn-pedir" onclick="prepararPedido('${song.number}', '${cleanArtist}', '${cleanTitle}')">PEDIR</button></td>
         `;
         fragment.appendChild(row);
     });
