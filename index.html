@@ -26,19 +26,20 @@
     <div id="loading">Cargando canciones...</div>
     <div id="noResults" style="display:none;">No se encontraron resultados</div>
 
-    <table id="songsTable">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Artista</th>
-                <th>Título</th>
-                <th>Género</th>
-                <th>Idioma</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody id="songsTableBody"></tbody>
-    </table>
+    <div class="table-wrapper">
+        <table id="songsTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Artista</th>
+                    <th>Título</th>
+                    <th>Género</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="songsTableBody"></tbody>
+        </table>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="songs.js"></script>

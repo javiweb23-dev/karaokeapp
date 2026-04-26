@@ -1,5 +1,5 @@
 const SUPABASE_URL = 'https://mefrjbmjfdphdqndpzcw.supabase.co';
-const SUPABASE_KEY = 'TU_LLAVE_PUBLISHABLE_AQUI';
+const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
 const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allSongs = [];
@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
         applyFilters();
     }
     setupEventListeners();
-    registerServiceWorker();
 });
 
 async function prepararPedido(number, artist, title) {
@@ -37,9 +36,9 @@ async function prepararPedido(number, artist, title) {
         ]);
 
     if (error) {
-        alert("Error: " + error.message);
+        alert("Error de API: " + error.message);
     } else {
-        alert("¡Recibido! Tu canción ya está en la lista.");
+        alert("¡Recibido, " + userName + "! Tu canción ya está en lista.");
     }
 }
 
@@ -63,23 +62,13 @@ function renderSongs(songs) {
 
     songs.forEach(song => {
         const row = document.createElement('tr');
-        const tdBtn = document.createElement('td');
-        const btn = document.createElement('button');
-        
-        btn.className = 'btn-pedir';
-        btn.innerHTML = 'PEDIR 📲';
-        btn.onclick = () => prepararPedido(song.number, song.artist, song.title);
-
         row.innerHTML = `
-            <td>#${song.number}</td>
-            <td>${song.artist}</td>
+            <td>${song.number}</td>
+            <td><strong>${song.artist}</strong></td>
             <td>${song.title}</td>
-            <td>${song.genre}</td>
-            <td>${song.language}</td>
+            <td style="color:#aaa">${song.genre}</td>
+            <td><button class="btn-pedir" onclick="prepararPedido('${song.number}', '${song.artist.replace(/'/g, "\\'")}', '${song.title.replace(/'/g, "\\'")}')">PEDIR 📲</button></td>
         `;
-        
-        tdBtn.appendChild(btn);
-        row.appendChild(tdBtn);
         fragment.appendChild(row);
     });
     
@@ -97,12 +86,10 @@ function applyFilters() {
         const matchLang = lang === "" || s.language.toLowerCase().includes(lang);
         const cleanA = s.artist.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const cleanT = s.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const cleanG = s.genre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         
         const matchSearch = term === "" || 
                             cleanA.includes(term) || 
                             cleanT.includes(term) || 
-                            cleanG.includes(term) || 
                             s.number.toString().includes(term);
                             
         return matchLang && matchSearch;
@@ -113,13 +100,6 @@ function applyFilters() {
 function setupEventListeners() {
     const searchInput = document.getElementById('searchInput');
     const langFilter = document.getElementById('languageFilter');
-    
     if (searchInput) searchInput.addEventListener('input', applyFilters);
     if (langFilter) langFilter.addEventListener('change', applyFilters);
-}
-
-function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js').catch(err => console.log("SW error:", err));
-    }
 }
