@@ -41,6 +41,7 @@ function mostrarAlertaElegante(mensaje) {
     title.style.margin = '0 0 15px 0';
 
     const text = document.createElement('p');
+    text.style.wordBreak = 'break-word';
     text.innerText = mensaje;
     text.style.whiteSpace = 'pre-line'; // Respeta los saltos de línea
     text.style.fontSize = '16px';
