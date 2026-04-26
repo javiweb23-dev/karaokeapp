@@ -1,11 +1,17 @@
-// 1. Agrega la librería de Supabase en tu index.html
-// <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 const SUPABASE_URL = 'https://mefrjbmjfdphdqndpzcw.supabase.co';
-const SUPABASE_KEY = 'PEGA_AQUI_TU_LLAVE_PUBLISHABLE_COMPLETA';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_KEY = 'TU_LLAVE_PUBLISHABLE_AQUI';
+const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// El resto de tu código sigue igual...
+let allSongs = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof songsDatabase !== 'undefined') {
+        allSongs = [...songsDatabase];
+        applyFilters();
+    }
+    setupEventListeners();
+    registerServiceWorker();
+});
 
 async function prepararPedido(number, artist, title) {
     let userName = localStorage.getItem('karaoke_user_name');
@@ -14,25 +20,106 @@ async function prepararPedido(number, artist, title) {
         userName = prompt("¡Hola! ¿Cuál es tu nombre para anunciarte?");
         if (userName && userName.trim() !== "") {
             localStorage.setItem('karaoke_user_name', userName.trim());
-        } else { return; }
+        } else {
+            return;
+        }
     }
 
-    // EN LUGAR DE WHATSAPP, GUARDAMOS EN LA DB
-    const { data, error } = await supabase
+    const { error } = await _supabase
         .from('solicitudes')
         .insert([
             { 
                 nombre_usuario: userName, 
-                cancion_info: `${artist} - ${title}`,
-                numero_cancion: number,
+                cancion_info: `${artist} - ${title}`, 
+                numero_cancion: number.toString(),
                 estado: 'pendiente' 
             }
         ]);
 
     if (error) {
-        alert("Error al enviar: " + error.message);
+        alert("Error: " + error.message);
     } else {
-        alert("¡Recibido! Tu canción está en la lista de espera.");
-        // Aquí podrías disparar la vista de "Ver mi lugar en la cola"
+        alert("¡Recibido! Tu canción ya está en la lista.");
+    }
+}
+
+function renderSongs(songs) {
+    const tbody = document.getElementById('songsTableBody');
+    const loading = document.getElementById('loading');
+    const noResults = document.getElementById('noResults');
+    
+    if (loading) loading.style.display = 'none';
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+
+    if (songs.length === 0) {
+        if (noResults) noResults.style.display = 'block';
+        return;
+    }
+    if (noResults) noResults.style.display = 'none';
+
+    const fragment = document.createDocumentFragment();
+
+    songs.forEach(song => {
+        const row = document.createElement('tr');
+        const tdBtn = document.createElement('td');
+        const btn = document.createElement('button');
+        
+        btn.className = 'btn-pedir';
+        btn.innerHTML = 'PEDIR 📲';
+        btn.onclick = () => prepararPedido(song.number, song.artist, song.title);
+
+        row.innerHTML = `
+            <td>#${song.number}</td>
+            <td>${song.artist}</td>
+            <td>${song.title}</td>
+            <td>${song.genre}</td>
+            <td>${song.language}</td>
+        `;
+        
+        tdBtn.appendChild(btn);
+        row.appendChild(tdBtn);
+        fragment.appendChild(row);
+    });
+    
+    tbody.appendChild(fragment);
+}
+
+function applyFilters() {
+    const searchInput = document.getElementById('searchInput');
+    const langFilter = document.getElementById('languageFilter');
+    
+    const term = searchInput ? searchInput.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
+    const lang = langFilter ? langFilter.value.toLowerCase() : "";
+
+    const filtered = allSongs.filter(s => {
+        const matchLang = lang === "" || s.language.toLowerCase().includes(lang);
+        const cleanA = s.artist.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const cleanT = s.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const cleanG = s.genre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        
+        const matchSearch = term === "" || 
+                            cleanA.includes(term) || 
+                            cleanT.includes(term) || 
+                            cleanG.includes(term) || 
+                            s.number.toString().includes(term);
+                            
+        return matchLang && matchSearch;
+    });
+    renderSongs(filtered);
+}
+
+function setupEventListeners() {
+    const searchInput = document.getElementById('searchInput');
+    const langFilter = document.getElementById('languageFilter');
+    
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
+    if (langFilter) langFilter.addEventListener('change', applyFilters);
+}
+
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js').catch(err => console.log("SW error:", err));
     }
 }

@@ -1,41 +1,47 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Karaoke Latino</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#FF8C00">
 </head>
 <body>
-    <header class="header">
-        <div class="logo-container">
-            <img src="logo.png" alt="Logo" class="logo-image">
+    <div class="header">
+        <img src="logo.png" alt="Logo" class="logo">
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="BUSCAR POR TÍTULO, ARTISTA O NÚMERO...">
+        <select id="languageFilter">
+            <option value="">TODOS LOS IDIOMAS</option>
+            <option value="español">Español</option>
+            <option value="inglés">Inglés</option>
+        </select>
+        <div class="custom-request">
+            <button onclick="window.open('https://wa.me/tu_numero', '_blank')">¿No encuentras tu tema? Pídelo aquí 📲</button>
         </div>
-        <div class="search-filter-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="BUSCAR POR TÍTULO, ARTISTA O NÚMERO...">
-            <div class="filters-row">
-                <select id="languageFilter" class="filter-select">
-                    <option value="">TODOS LOS IDIOMAS</option>
-                    <option value="español">ESPAÑOL</option>
-                    <option value="ingles">INGLÉS</option>
-                </select>
-            </div>
-            <a href="https://wa.me/584121591072?text=Hola!%20No%20encuentro%20un%20tema..." target="_blank" class="custom-order-btn">
-               ¿No encuentras tu tema? Pídelo aquí 📲
-            </a>
-        </div>
-    </header>
-    <main class="table-container">
-        <table class="songs-table">
-            <tbody id="songsTableBody"></tbody>
-        </table>
-        <div id="loading">Cargando canciones...</div>
-        <div id="noResults" style="display: none;">No se encontraron resultados</div>
-    </main>
-    <script src="songs.js?v=1.4" defer></script>
-    <script src="app.js?v=1.4" defer></script>
+    </div>
+
+    <div id="loading">Cargando canciones...</div>
+    <div id="noResults" style="display:none;">No se encontraron resultados</div>
+
+    <table id="songsTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Artista</th>
+                <th>Título</th>
+                <th>Género</th>
+                <th>Idioma</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody id="songsTableBody"></tbody>
+    </table>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="songs.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
