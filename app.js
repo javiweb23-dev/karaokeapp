@@ -25,7 +25,7 @@ async function prepararPedido(number, artist, title) {
     }
 
     const { error } = await _supabase
-        .from('solicitudes')
+        .from('Solicitudes')
         .insert([
             { 
                 nombre_usuario: userName, 
