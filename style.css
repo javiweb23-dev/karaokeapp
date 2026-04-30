@@ -10,17 +10,44 @@ body {
     background-color: #ff6600;
     text-align: center;
     padding: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 200;
 }
 
 .logo {
     max-width: 180px;
 }
 
+.live-status {
+    background-color: #1a1a1a;
+    color: #fff;
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: sticky;
+    top: var(--header-height, 0px);
+    z-index: 190;
+    border-bottom: 1px solid #333;
+}
+
+.live-status strong {
+    color: #ff6600;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+}
+
+.live-status span {
+    font-size: 16px;
+    font-weight: 700;
+}
+
 .search-container {
     padding: 15px;
     background-color: #ff6600;
     position: sticky;
-    top: 0;
+    top: calc(var(--header-height, 0px) + var(--live-status-height, 0px));
     z-index: 100;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }

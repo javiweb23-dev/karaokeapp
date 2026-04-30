@@ -5,6 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Karaoke Latino</title>
     <link rel="stylesheet" href="style.css">
+    <script>
+        const accesoAdminValido = sessionStorage.getItem('admin_access_validado');
+        if (accesoAdminValido === 'true') {
+            window.addEventListener('DOMContentLoaded', () => {
+                document.body.style.display = 'block';
+            });
+        } else {
+            const pin = prompt('Ingresa el PIN de acceso', '1234');
+            if (pin === '1234') {
+                sessionStorage.setItem('admin_access_validado', 'true');
+                window.addEventListener('DOMContentLoaded', () => {
+                    document.body.style.display = 'block';
+                });
+            } else {
+                alert('Acceso denegado');
+                throw new Error('Acceso denegado');
+            }
+        }
+    </script>
     <style>
     body { background-color: #000; color: #fff; font-family: sans-serif; margin: 0; }
     .header { 
@@ -53,7 +72,7 @@
     }
     </style>
 </head>
-<body>
+<body style="display:none;">
     <div class="header">
         <h1>PANEL DE CONTROL</h1>
     </div>

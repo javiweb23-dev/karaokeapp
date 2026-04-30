@@ -3,8 +3,12 @@ const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
 const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allSongs = [];
+const ALERT_SOUND_URL = 'https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg';
+let notificationAudio = null;
+let notificationAudioReady = false;
 
 document.addEventListener('DOMContentLoaded', () => {
+    setupStickyOffsets();
     setTimeout(() => {
         if (typeof songsDatabase !== 'undefined') {
             allSongs = [...songsDatabase];
@@ -13,8 +17,53 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('loading').innerText = "Error al leer las canciones. Refresca la página.";
         }
         setupEventListeners();
+        startLiveStatusTracking();
     }, 100);
 });
+
+function setupStickyOffsets() {
+    const syncOffsets = () => {
+        const header = document.querySelector('.header');
+        const liveBar = document.getElementById('liveStatusBar');
+        const headerHeight = header ? `${header.offsetHeight}px` : '0px';
+        const liveBarHeight = liveBar ? `${liveBar.offsetHeight}px` : '0px';
+        document.documentElement.style.setProperty('--header-height', headerHeight);
+        document.documentElement.style.setProperty('--live-status-height', liveBarHeight);
+    };
+    syncOffsets();
+    window.addEventListener('resize', syncOffsets);
+}
+
+async function updateLiveStatus() {
+    const liveSingerText = document.getElementById('liveSingerText');
+    if (!liveSingerText) return;
+    const { data, error } = await _supabase
+        .from('Solicitudes')
+        .select('nombre_usuario')
+        .eq('estado', 'aprobada')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+    if (error || !data || !data.nombre_usuario) {
+        liveSingerText.innerText = '🎤 CANTANDO AHORA: ---';
+        return;
+    }
+    liveSingerText.innerText = `🎤 CANTANDO AHORA: ${data.nombre_usuario}`;
+}
+
+function startLiveStatusTracking() {
+    updateLiveStatus();
+    _supabase
+        .channel('live-status-aprobada')
+        .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'Solicitudes' },
+            () => {
+                updateLiveStatus();
+            }
+        )
+        .subscribe();
+}
 
 // FUNCIÓN DE ALERTA ELEGANTE (BLINDADA CONTRA CSS EXTERNO)
 function mostrarAlertaElegante(mensaje) {
@@ -70,7 +119,20 @@ function mostrarAlertaElegante(mensaje) {
     btn.style.cursor = 'pointer';
     btn.style.fontWeight = 'bold';
     btn.style.fontSize = '16px';
-    btn.onclick = () => document.body.removeChild(modal);
+    btn.onclick = async () => {
+        if (!notificationAudioReady) {
+            notificationAudio = new Audio(ALERT_SOUND_URL);
+            notificationAudio.preload = 'auto';
+            notificationAudio.volume = 1;
+            try {
+                await notificationAudio.play();
+                notificationAudio.pause();
+                notificationAudio.currentTime = 0;
+            } catch (e) {}
+            notificationAudioReady = true;
+        }
+        document.body.removeChild(modal);
+    };
 
     box.appendChild(title);
     box.appendChild(text);
@@ -123,6 +185,16 @@ async function prepararPedido(number, artist, title) {
                     },
                     (payload) => {
                         if (payload.new.estado === 'preparate') {
+                            if (navigator.vibrate) {
+                                navigator.vibrate([500, 200, 500]);
+                            }
+                            if (notificationAudio) {
+                                notificationAudio.currentTime = 0;
+                                notificationAudio.play().catch(() => {});
+                            } else {
+                                const fallbackAudio = new Audio(ALERT_SOUND_URL);
+                                fallbackAudio.play().catch(() => {});
+                            }
                             mostrarAlertaElegante(`¡PREPÁRATE ${userName.toUpperCase()}!\n\nTu canción "${title}" es la siguiente.\n\nPendiente, puedes levantar la mano para ubicarte y que te lleven el micrófono.`);
                         }
                     }
