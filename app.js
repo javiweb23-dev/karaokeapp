@@ -6,10 +6,12 @@ let allSongs = [];
 const ALERT_SOUND_URL = 'https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg';
 let notificationAudio = null;
 let notificationAudioReady = false;
+let deferredInstallPrompt = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', unlockNotificationAudio, { once: true });
     document.addEventListener('touchstart', unlockNotificationAudio, { once: true });
+    setupInstallAndQr();
     setupStickyOffsets();
     setTimeout(() => {
         if (typeof songsDatabase !== 'undefined') {
@@ -65,6 +67,67 @@ function startLiveStatusTracking() {
             }
         )
         .subscribe();
+}
+
+function generateShareQrUrl() {
+    const shareUrl = window.location.href;
+    return 'https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=' + encodeURIComponent(shareUrl);
+}
+
+function setupInstallAndQr() {
+    const installBtn = document.getElementById('installBtn');
+    const openQrBtn = document.getElementById('openQrBtn');
+    const closeQrBtn = document.getElementById('closeQrBtn');
+    const qrModal = document.getElementById('qrModal');
+    const qrImage = document.getElementById('qrImage');
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+
+    if (!installBtn || !openQrBtn || !closeQrBtn || !qrModal || !qrImage) return;
+
+    if (isStandalone) {
+        installBtn.style.display = 'none';
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        if (!isStandalone) {
+            installBtn.style.display = 'inline-flex';
+        }
+    });
+
+    installBtn.addEventListener('click', async () => {
+        if (deferredInstallPrompt) {
+            deferredInstallPrompt.prompt();
+            await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            installBtn.style.display = 'none';
+            return;
+        }
+        if (isIos && !isStandalone) {
+            mostrarAlertaElegante('Pulsa Compartir y luego Añadir a pantalla de inicio');
+        }
+    });
+
+    window.addEventListener('appinstalled', () => {
+        installBtn.style.display = 'none';
+    });
+
+    openQrBtn.addEventListener('click', () => {
+        qrImage.src = generateShareQrUrl();
+        qrModal.style.display = 'flex';
+    });
+
+    closeQrBtn.addEventListener('click', () => {
+        qrModal.style.display = 'none';
+    });
+
+    qrModal.addEventListener('click', (e) => {
+        if (e.target === qrModal) {
+            qrModal.style.display = 'none';
+        }
+    });
 }
 
 async function unlockNotificationAudio() {

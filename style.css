@@ -6,6 +6,21 @@ body {
     padding: 0;
 }
 
+.install-btn {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 500;
+    background: #000;
+    color: #fff;
+    border: 1px solid #fff;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
 .header {
     background-color: #ff6600;
     text-align: center;
@@ -73,6 +88,70 @@ input, select {
     font-weight: bold;
     cursor: pointer;
     text-transform: uppercase;
+}
+
+.share-qr-wrap {
+    margin-top: 10px;
+}
+
+.share-qr-btn {
+    width: 100%;
+    background-color: #1a1a1a;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.qr-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 600;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.qr-modal-content {
+    width: 100%;
+    max-width: 360px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 14px;
+    padding: 18px;
+    text-align: center;
+}
+
+.qr-modal-content h3 {
+    margin: 0 0 12px 0;
+    color: #ff6600;
+}
+
+.qr-modal-content img {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    border-radius: 8px;
+    background: #fff;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.close-qr-btn {
+    margin-top: 14px;
+    width: 100%;
+    background: #ff6600;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 11px;
+    font-weight: 700;
+    cursor: pointer;
 }
 
 .table-wrapper {
