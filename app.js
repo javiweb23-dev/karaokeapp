@@ -8,6 +8,8 @@ let notificationAudio = null;
 let notificationAudioReady = false;
 
 document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('click', unlockNotificationAudio, { once: true });
+    document.addEventListener('touchstart', unlockNotificationAudio, { once: true });
     setupStickyOffsets();
     setTimeout(() => {
         if (typeof songsDatabase !== 'undefined') {
@@ -40,12 +42,12 @@ async function updateLiveStatus() {
     const { data, error } = await _supabase
         .from('Solicitudes')
         .select('nombre_usuario')
-        .eq('estado', 'aprobada')
+        .eq('estado', 'preparate')
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
     if (error || !data || !data.nombre_usuario) {
-        liveSingerText.innerText = '🎤 CANTANDO AHORA: ---';
+        liveSingerText.innerText = '🎤 ESPERANDO PRÓXIMO CANTANTE...';
         return;
     }
     liveSingerText.innerText = `🎤 CANTANDO AHORA: ${data.nombre_usuario}`;
@@ -65,7 +67,36 @@ function startLiveStatusTracking() {
         .subscribe();
 }
 
-// FUNCIÓN DE ALERTA ELEGANTE (BLINDADA CONTRA CSS EXTERNO)
+async function unlockNotificationAudio() {
+    if (notificationAudioReady) return;
+    notificationAudio = new Audio(ALERT_SOUND_URL);
+    notificationAudio.preload = 'auto';
+    notificationAudio.volume = 1;
+    try {
+        await notificationAudio.play();
+        notificationAudio.pause();
+        notificationAudio.currentTime = 0;
+    } catch (e) {}
+    notificationAudioReady = true;
+}
+
+function playNotificationTwice() {
+    if (navigator.vibrate) {
+        navigator.vibrate([500, 200, 500, 300, 500, 200, 500]);
+    }
+    const playOnce = () => {
+        if (notificationAudio) {
+            notificationAudio.currentTime = 0;
+            notificationAudio.play().catch(() => {});
+            return;
+        }
+        const fallbackAudio = new Audio(ALERT_SOUND_URL);
+        fallbackAudio.play().catch(() => {});
+    };
+    playOnce();
+    setTimeout(playOnce, 900);
+}
+
 function mostrarAlertaElegante(mensaje) {
     const modal = document.createElement('div');
     modal.style.position = 'fixed';
@@ -120,17 +151,7 @@ function mostrarAlertaElegante(mensaje) {
     btn.style.fontWeight = 'bold';
     btn.style.fontSize = '16px';
     btn.onclick = async () => {
-        if (!notificationAudioReady) {
-            notificationAudio = new Audio(ALERT_SOUND_URL);
-            notificationAudio.preload = 'auto';
-            notificationAudio.volume = 1;
-            try {
-                await notificationAudio.play();
-                notificationAudio.pause();
-                notificationAudio.currentTime = 0;
-            } catch (e) {}
-            notificationAudioReady = true;
-        }
+        await unlockNotificationAudio();
         document.body.removeChild(modal);
     };
 
@@ -185,16 +206,7 @@ async function prepararPedido(number, artist, title) {
                     },
                     (payload) => {
                         if (payload.new.estado === 'preparate') {
-                            if (navigator.vibrate) {
-                                navigator.vibrate([500, 200, 500]);
-                            }
-                            if (notificationAudio) {
-                                notificationAudio.currentTime = 0;
-                                notificationAudio.play().catch(() => {});
-                            } else {
-                                const fallbackAudio = new Audio(ALERT_SOUND_URL);
-                                fallbackAudio.play().catch(() => {});
-                            }
+                            playNotificationTwice();
                             mostrarAlertaElegante(`¡PREPÁRATE ${userName.toUpperCase()}!\n\nTu canción "${title}" es la siguiente.\n\nPendiente, puedes levantar la mano para ubicarte y que te lleven el micrófono.`);
                         }
                     }
