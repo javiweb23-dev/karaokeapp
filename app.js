@@ -69,31 +69,42 @@ function startLiveStatusTracking() {
         .subscribe();
 }
 
-function generateShareQrUrl() {
+function generateShareQrUrl(size) {
     const shareUrl = window.location.href;
-    return 'https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=' + encodeURIComponent(shareUrl);
+    return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(shareUrl)}`;
 }
 
 function setupInstallAndQr() {
     const installBtn = document.getElementById('installBtn');
+    const installNote = document.getElementById('installNote');
     const openQrBtn = document.getElementById('openQrBtn');
     const closeQrBtn = document.getElementById('closeQrBtn');
     const qrModal = document.getElementById('qrModal');
+    const qrModalContent = document.querySelector('.qr-modal-content');
     const qrImage = document.getElementById('qrImage');
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
 
-    if (!installBtn || !openQrBtn || !closeQrBtn || !qrModal || !qrImage) return;
+    if (!installBtn || !installNote || !openQrBtn || !closeQrBtn || !qrModal || !qrModalContent || !qrImage) return;
+
+    const setInstallVisibility = (visible) => {
+        installBtn.style.display = visible ? 'inline-flex' : 'none';
+        installNote.style.display = visible ? 'block' : 'none';
+    };
 
     if (isStandalone) {
-        installBtn.style.display = 'none';
+        setInstallVisibility(false);
+    } else if (isIos) {
+        setInstallVisibility(true);
+    } else {
+        setInstallVisibility(false);
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredInstallPrompt = e;
         if (!isStandalone) {
-            installBtn.style.display = 'inline-flex';
+            setInstallVisibility(true);
         }
     });
 
@@ -102,20 +113,22 @@ function setupInstallAndQr() {
             deferredInstallPrompt.prompt();
             await deferredInstallPrompt.userChoice;
             deferredInstallPrompt = null;
-            installBtn.style.display = 'none';
+            setInstallVisibility(false);
             return;
         }
         if (isIos && !isStandalone) {
-            mostrarAlertaElegante('Pulsa Compartir y luego Añadir a pantalla de inicio');
+            mostrarAlertaElegante('Para guardar, pulsa el botón Compartir y luego Añadir a la pantalla de inicio. Tu información permanece privada siempre');
         }
     });
 
     window.addEventListener('appinstalled', () => {
-        installBtn.style.display = 'none';
+        setInstallVisibility(false);
     });
 
     openQrBtn.addEventListener('click', () => {
-        qrImage.src = generateShareQrUrl();
+        const modalWidth = qrModalContent.clientWidth;
+        const qrSize = Math.max(180, Math.min(320, modalWidth - 36));
+        qrImage.src = generateShareQrUrl(qrSize);
         qrModal.style.display = 'flex';
     });
 
