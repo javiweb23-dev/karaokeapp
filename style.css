@@ -1,37 +1,59 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 body {
     background-color: #000;
     color: #fff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
+    width: 100%;
+    overflow-x: hidden;
 }
 
 .header {
     background-color: #ff6600;
     text-align: center;
-    padding: 20px;
+    padding: 14px 12px;
     position: sticky;
     top: 0;
     z-index: 200;
 }
 
 .logo {
-    max-width: 180px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 150px;
+    width: 100%;
+    height: auto;
 }
 
 .live-status {
-    background: linear-gradient(180deg, #252525 0%, #141414 100%);
+    width: 100%;
+    background-color: #0d0d0d;
     color: #fff;
-    padding: 14px 16px 16px;
+    padding: 18px 14px 22px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
     position: sticky;
     top: var(--header-height, 0px);
     z-index: 190;
     border-top: 2px solid #ff6600;
-    border-bottom: 1px solid #333;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+    border-bottom: 2px solid #ff6600;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.65);
+}
+
+.live-status-head {
+    width: 100%;
+    text-align: center;
 }
 
 .live-status-head strong {
@@ -42,69 +64,71 @@ body {
 }
 
 .live-status-body {
-    min-height: 1.4em;
+    width: 100%;
+    min-height: 1.5em;
+    text-align: center;
 }
 
 .live-status-body span {
     display: block;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 800;
-    line-height: 1.4;
+    line-height: 1.45;
     word-break: break-word;
     color: #fff;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 .search-container {
-    padding: 15px 18px;
+    width: 100%;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 14px 12px;
     background-color: #ff6600;
     position: sticky;
     top: calc(var(--header-height, 0px) + var(--live-status-height, 0px));
     z-index: 100;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    max-width: 960px;
-    margin-left: auto;
-    margin-right: auto;
-    box-sizing: border-box;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-input, select {
+input,
+select {
+    display: block;
     width: 100%;
-    padding: 12px 15px;
-    margin-bottom: 10px;
+    max-width: 100%;
+    margin: 0 0 12px 0;
+    padding: 15px;
     border-radius: 25px;
     border: 1px solid #ccc;
     font-size: 16px;
-    box-sizing: border-box;
     outline: none;
     text-align: center;
 }
 
-.custom-request button {
-    width: 100%;
-    background-color: #000;
-    color: #fff;
-    border: none;
-    padding: 12px;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
-    text-transform: uppercase;
+select {
+    background-color: #fff;
+    color: #000;
 }
 
 .share-qr-wrap {
-    margin-top: 10px;
+    margin-top: 2px;
 }
 
 .share-qr-btn {
+    display: block;
     width: 100%;
-    background-color: #1a1a1a;
-    color: #fff;
-    border: none;
-    padding: 10px;
-    border-radius: 10px;
+    max-width: 100%;
+    margin: 0;
+    padding: 15px;
+    border-radius: 25px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    color: #000;
+    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
+    text-align: center;
 }
 
 .qr-modal {
@@ -115,8 +139,7 @@ input, select {
     z-index: 600;
     justify-content: center;
     align-items: center;
-    padding: 20px;
-    box-sizing: border-box;
+    padding: 16px;
 }
 
 .qr-modal * {
@@ -145,72 +168,129 @@ input, select {
     border-radius: 8px;
     background: #fff;
     padding: 8px;
-    box-sizing: border-box;
 }
 
 .close-qr-btn {
     margin-top: 14px;
     width: 100%;
+    padding: 15px;
+    border-radius: 25px;
+    border: none;
     background: #ff6600;
     color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 11px;
+    font-size: 16px;
     font-weight: 700;
     cursor: pointer;
 }
 
 .table-wrapper {
-    padding: 10px 18px 20px;
-    max-width: 960px;
+    width: 100%;
+    max-width: 800px;
     margin-left: auto;
     margin-right: auto;
-    box-sizing: border-box;
+    padding: 12px 12px 24px;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    margin-top: 8px;
+    table-layout: fixed;
 }
 
 th {
     background-color: #1a1a1a;
     color: #ff6600;
     text-align: center;
-    padding: 12px;
-    font-size: 14px;
+    padding: 10px 6px;
+    font-size: 12px;
     text-transform: uppercase;
+    letter-spacing: 0.02em;
 }
 
 td {
-    padding: 15px 10px;
+    padding: 10px 6px;
     border-bottom: 1px solid #222;
-    font-size: 15px;
+    font-size: 14px;
     text-align: center;
     vertical-align: middle;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+}
+
+th:first-child,
+td:first-child {
+    width: 1%;
+    min-width: 92px;
+    max-width: 110px;
+    padding-left: 4px;
+    padding-right: 4px;
 }
 
 .btn-pedir {
     background-color: #ff6600;
     color: #000;
     border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
+    padding: 10px 8px;
+    border-radius: 8px;
     font-weight: bold;
+    font-size: 13px;
     cursor: pointer;
     width: 100%;
+    min-width: 0;
+    white-space: nowrap;
 }
 
-#loading, #noResults {
+#loading,
+#noResults {
     text-align: center;
-    padding: 40px;
+    padding: 32px 16px;
     color: #ff6600;
     font-weight: bold;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-@media (max-width: 600px) {
-    td { font-size: 13px; }
-    .btn-pedir { padding: 8px; font-size: 12px; }
-    .live-status-body span { font-size: 15px; }
+@media (min-width: 640px) {
+    .header {
+        padding: 18px 16px;
+    }
+
+    .live-status {
+        padding: 20px 18px 24px;
+    }
+
+    .live-status-body span {
+        font-size: 17px;
+    }
+
+    .search-container {
+        padding: 16px 16px;
+    }
+
+    .table-wrapper {
+        padding: 14px 16px 28px;
+    }
+
+    th {
+        padding: 12px 8px;
+        font-size: 13px;
+    }
+
+    td {
+        padding: 14px 10px;
+        font-size: 15px;
+    }
+
+    th:first-child,
+    td:first-child {
+        min-width: 100px;
+        max-width: 120px;
+    }
+
+    .btn-pedir {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
 }
