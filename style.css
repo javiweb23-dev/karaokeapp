@@ -16,8 +16,11 @@ body {
 
 .header {
     background-color: #ff6600;
-    text-align: center;
-    padding: 14px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
     position: sticky;
     top: 0;
     z-index: 200;
@@ -25,58 +28,33 @@ body {
 
 .logo {
     display: block;
-    margin-left: auto;
-    margin-right: auto;
     max-width: 150px;
-    width: 100%;
+    max-height: 40px;
+    width: auto;
     height: auto;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 
-.live-status {
-    width: 100%;
-    background-color: #0d0d0d;
-    color: #fff;
-    padding: 18px 14px 22px;
-    display: flex;
-    flex-direction: column;
+.header-qr-btn {
+    flex-shrink: 0;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    text-align: center;
-    position: sticky;
-    top: var(--header-height, 0px);
-    z-index: 190;
-    border-top: 2px solid #ff6600;
-    border-bottom: 2px solid #ff6600;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.65);
+    padding: 5px;
+    font-size: 12px;
+    line-height: 1;
+    border-radius: 8px;
+    border: 2px solid #000;
+    background-color: #fff;
+    color: #000;
+    cursor: pointer;
 }
 
-.live-status-head {
-    width: 100%;
-    text-align: center;
-}
-
-.live-status-head strong {
-    color: #ff6600;
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    font-weight: 800;
-}
-
-.live-status-body {
-    width: 100%;
-    min-height: 1.5em;
-    text-align: center;
-}
-
-.live-status-body span {
+.header-qr-icon {
     display: block;
-    font-size: 16px;
-    font-weight: 800;
-    line-height: 1.45;
-    word-break: break-word;
-    color: #fff;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+    width: 18px;
+    height: 18px;
 }
 
 .search-container {
@@ -87,13 +65,13 @@ body {
     padding: 14px 12px;
     background-color: #ff6600;
     position: sticky;
-    top: calc(var(--header-height, 0px) + var(--live-status-height, 0px));
+    top: var(--header-height, 0px);
     z-index: 100;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 input,
-select {
+#langToggle {
     display: block;
     width: 100%;
     max-width: 100%;
@@ -106,29 +84,11 @@ select {
     text-align: center;
 }
 
-select {
+#langToggle {
     background-color: #fff;
     color: #000;
-}
-
-.share-qr-wrap {
-    margin-top: 2px;
-}
-
-.share-qr-btn {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    padding: 15px;
-    border-radius: 25px;
-    border: 1px solid #ccc;
-    background-color: #fff;
-    color: #000;
-    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    text-align: center;
 }
 
 .qr-modal {
@@ -198,6 +158,27 @@ table {
     table-layout: fixed;
 }
 
+#songsTable th:nth-child(1),
+#songsTable td:nth-child(1) {
+    width: 20%;
+    min-width: 76px;
+}
+
+#songsTable th:nth-child(2),
+#songsTable td:nth-child(2) {
+    width: 26%;
+}
+
+#songsTable th:nth-child(3),
+#songsTable td:nth-child(3) {
+    width: 38%;
+}
+
+#songsTable th:nth-child(4),
+#songsTable td:nth-child(4) {
+    width: 16%;
+}
+
 th {
     background-color: #1a1a1a;
     color: #ff6600;
@@ -220,9 +201,6 @@ td {
 
 th:first-child,
 td:first-child {
-    width: 1%;
-    min-width: 92px;
-    max-width: 110px;
     padding-left: 4px;
     padding-right: 4px;
 }
@@ -237,7 +215,7 @@ td:first-child {
     font-size: 13px;
     cursor: pointer;
     width: 100%;
-    min-width: 0;
+    min-width: 70px;
     white-space: nowrap;
 }
 
@@ -254,15 +232,7 @@ td:first-child {
 
 @media (min-width: 640px) {
     .header {
-        padding: 18px 16px;
-    }
-
-    .live-status {
-        padding: 20px 18px 24px;
-    }
-
-    .live-status-body span {
-        font-size: 17px;
+        padding: 5px 10px;
     }
 
     .search-container {
@@ -283,10 +253,9 @@ td:first-child {
         font-size: 15px;
     }
 
-    th:first-child,
-    td:first-child {
-        min-width: 100px;
-        max-width: 120px;
+    #songsTable th:nth-child(1),
+    #songsTable td:nth-child(1) {
+        min-width: 80px;
     }
 
     .btn-pedir {

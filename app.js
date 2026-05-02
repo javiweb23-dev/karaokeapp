@@ -3,6 +3,7 @@ const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
 const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allSongs = [];
+let currentLang = 'español';
 const ALERT_SOUND_URL = 'https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg';
 let notificationAudio = null;
 let notificationAudioReady = false;
@@ -15,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         if (typeof songsDatabase !== 'undefined') {
             allSongs = [...songsDatabase];
+            syncLangToggleButton();
             applyFilters();
         } else {
             document.getElementById('loading').innerText = "Error al leer las canciones. Refresca la página.";
@@ -27,11 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupStickyOffsets() {
     const syncOffsets = () => {
         const header = document.querySelector('.header');
-        const liveBar = document.getElementById('liveStatusBar');
         const headerHeight = header ? `${header.offsetHeight}px` : '0px';
-        const liveBarHeight = liveBar ? `${liveBar.offsetHeight}px` : '0px';
         document.documentElement.style.setProperty('--header-height', headerHeight);
-        document.documentElement.style.setProperty('--live-status-height', liveBarHeight);
+        document.documentElement.style.setProperty('--live-status-height', '0px');
     };
     syncOffsets();
     window.addEventListener('resize', syncOffsets);
@@ -404,18 +404,23 @@ function renderSongs(songs) {
     tbody.appendChild(fragment);
 }
 
+function syncLangToggleButton() {
+    const langToggle = document.getElementById('langToggle');
+    if (!langToggle) return;
+    langToggle.dataset.lang = currentLang;
+    langToggle.textContent = currentLang === 'español' ? 'ESPAÑOL' : 'INGLÉS';
+}
+
 function applyFilters() {
     const searchInput = document.getElementById('searchInput');
-    const langFilter = document.getElementById('languageFilter');
 
     const rawTerm = searchInput ? searchInput.value.trim() : '';
     const term = normalizeFilterText(rawTerm);
-    const langVal = langFilter ? langFilter.value : '';
-    const langNorm = normalizeFilterText(langVal);
+    const langNorm = normalizeFilterText(currentLang);
 
     const filtered = allSongs.filter((s) => {
         const songLang = normalizeFilterText(s.language);
-        const matchLang = langNorm === '' || songLang.includes(langNorm);
+        const matchLang = songLang.includes(langNorm);
 
         const cleanA = normalizeFilterText(s.artist);
         const cleanT = normalizeFilterText(s.title);
@@ -438,7 +443,13 @@ function applyFilters() {
 
 function setupEventListeners() {
     const searchInput = document.getElementById('searchInput');
-    const langFilter = document.getElementById('languageFilter');
+    const langToggle = document.getElementById('langToggle');
     if (searchInput) searchInput.addEventListener('input', applyFilters);
-    if (langFilter) langFilter.addEventListener('change', applyFilters);
+    if (langToggle) {
+        langToggle.addEventListener('click', () => {
+            currentLang = currentLang === 'español' ? 'inglés' : 'español';
+            syncLangToggleButton();
+            applyFilters();
+        });
+    }
 }

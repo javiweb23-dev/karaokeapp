@@ -15,26 +15,14 @@
 <body>
     <div class="header">
         <img src="logo.png" alt="Logo" class="logo">
-    </div>
-    <div class="live-status" id="liveStatusBar">
-        <div class="live-status-head">
-            <strong>ESTADO EN VIVO</strong>
-        </div>
-        <div class="live-status-body">
-            <span id="liveSingerText" role="status" aria-live="polite">🎤 ESPERANDO PRÓXIMO CANTANTE...</span>
-        </div>
+        <button type="button" id="openQrBtn" class="header-qr-btn" aria-label="Compartir código QR">
+            <svg class="header-qr-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect width="5" height="5" x="7" y="7" rx="1"/><rect width="5" height="5" x="14" y="7" rx="1"/><rect width="5" height="5" x="7" y="14" rx="1"/></svg>
+        </button>
     </div>
 
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="BUSCAR POR TÍTULO, ARTISTA O NÚMERO...">
-        <select id="languageFilter">
-            <option value="">TODOS LOS IDIOMAS</option>
-            <option value="español">Español</option>
-            <option value="inglés">Inglés</option>
-        </select>
-        <div class="share-qr-wrap">
-            <button id="openQrBtn" class="share-qr-btn">Compartir QR</button>
-        </div>
+        <button type="button" id="langToggle" data-lang="español">ESPAÑOL</button>
     </div>
     <div id="qrModal" class="qr-modal">
         <div class="qr-modal-content">
