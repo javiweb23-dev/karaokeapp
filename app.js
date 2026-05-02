@@ -3,8 +3,16 @@ const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
 const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allSongs = [];
+const ALERT_SOUND_URL = 'https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg';
+let notificationAudio = null;
+let notificationAudioReady = false;
+let deferredInstallPrompt = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('click', unlockNotificationAudio, { once: true });
+    document.addEventListener('touchstart', unlockNotificationAudio, { once: true });
+    setupInstallAndQr();
+    setupStickyOffsets();
     setTimeout(() => {
         if (typeof songsDatabase !== 'undefined') {
             allSongs = [...songsDatabase];
@@ -13,10 +21,158 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('loading').innerText = "Error al leer las canciones. Refresca la página.";
         }
         setupEventListeners();
+        startLiveStatusTracking();
     }, 100);
 });
 
-// FUNCIÓN DE ALERTA ELEGANTE (BLINDADA CONTRA CSS EXTERNO)
+function setupStickyOffsets() {
+    const syncOffsets = () => {
+        const header = document.querySelector('.header');
+        const liveBar = document.getElementById('liveStatusBar');
+        const headerHeight = header ? `${header.offsetHeight}px` : '0px';
+        const liveBarHeight = liveBar ? `${liveBar.offsetHeight}px` : '0px';
+        document.documentElement.style.setProperty('--header-height', headerHeight);
+        document.documentElement.style.setProperty('--live-status-height', liveBarHeight);
+    };
+    syncOffsets();
+    window.addEventListener('resize', syncOffsets);
+}
+
+async function updateLiveStatus() {
+    const liveSingerText = document.getElementById('liveSingerText');
+    if (!liveSingerText) return;
+    const { data, error } = await _supabase
+        .from('Solicitudes')
+        .select('nombre_usuario')
+        .eq('estado', 'preparate')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+    if (error || !data || !data.nombre_usuario) {
+        liveSingerText.innerText = '🎤 ESPERANDO PRÓXIMO CANTANTE...';
+        return;
+    }
+    liveSingerText.innerText = `🎤 CANTANDO AHORA: ${data.nombre_usuario}`;
+}
+
+function startLiveStatusTracking() {
+    updateLiveStatus();
+    _supabase
+        .channel('live-status-aprobada')
+        .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'Solicitudes' },
+            () => {
+                updateLiveStatus();
+            }
+        )
+        .subscribe();
+}
+
+function generateShareQrUrl(size) {
+    const shareUrl = window.location.href;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(shareUrl)}`;
+}
+
+function setupInstallAndQr() {
+    const installBtn = document.getElementById('installBtn');
+    const installNote = document.getElementById('installNote');
+    const openQrBtn = document.getElementById('openQrBtn');
+    const closeQrBtn = document.getElementById('closeQrBtn');
+    const qrModal = document.getElementById('qrModal');
+    const qrModalContent = document.querySelector('.qr-modal-content');
+    const qrImage = document.getElementById('qrImage');
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+
+    if (!installBtn || !installNote || !openQrBtn || !closeQrBtn || !qrModal || !qrModalContent || !qrImage) return;
+
+    const setInstallVisibility = (visible) => {
+        installBtn.style.display = visible ? 'inline-flex' : 'none';
+        installNote.style.display = visible ? 'block' : 'none';
+    };
+
+    if (isStandalone) {
+        setInstallVisibility(false);
+    } else if (isIos) {
+        setInstallVisibility(true);
+    } else {
+        setInstallVisibility(false);
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        if (!isStandalone) {
+            setInstallVisibility(true);
+        }
+    });
+
+    installBtn.addEventListener('click', async () => {
+        if (deferredInstallPrompt) {
+            deferredInstallPrompt.prompt();
+            await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            setInstallVisibility(false);
+            return;
+        }
+        if (isIos && !isStandalone) {
+            mostrarAlertaElegante('Para guardar, pulsa el botón Compartir y luego Añadir a la pantalla de inicio. Tu información permanece privada siempre');
+        }
+    });
+
+    window.addEventListener('appinstalled', () => {
+        setInstallVisibility(false);
+    });
+
+    openQrBtn.addEventListener('click', () => {
+        const modalWidth = qrModalContent.clientWidth;
+        const qrSize = Math.max(180, Math.min(320, modalWidth - 36));
+        qrImage.src = generateShareQrUrl(qrSize);
+        qrModal.style.display = 'flex';
+    });
+
+    closeQrBtn.addEventListener('click', () => {
+        qrModal.style.display = 'none';
+    });
+
+    qrModal.addEventListener('click', (e) => {
+        if (e.target === qrModal) {
+            qrModal.style.display = 'none';
+        }
+    });
+}
+
+async function unlockNotificationAudio() {
+    if (notificationAudioReady) return;
+    notificationAudio = new Audio(ALERT_SOUND_URL);
+    notificationAudio.preload = 'auto';
+    notificationAudio.volume = 1;
+    try {
+        await notificationAudio.play();
+        notificationAudio.pause();
+        notificationAudio.currentTime = 0;
+    } catch (e) {}
+    notificationAudioReady = true;
+}
+
+function playNotificationTwice() {
+    if (navigator.vibrate) {
+        navigator.vibrate([500, 200, 500, 300, 500, 200, 500]);
+    }
+    const playOnce = () => {
+        if (notificationAudio) {
+            notificationAudio.currentTime = 0;
+            notificationAudio.play().catch(() => {});
+            return;
+        }
+        const fallbackAudio = new Audio(ALERT_SOUND_URL);
+        fallbackAudio.play().catch(() => {});
+    };
+    playOnce();
+    setTimeout(playOnce, 900);
+}
+
 function mostrarAlertaElegante(mensaje) {
     const modal = document.createElement('div');
     modal.style.position = 'fixed';
@@ -70,7 +226,10 @@ function mostrarAlertaElegante(mensaje) {
     btn.style.cursor = 'pointer';
     btn.style.fontWeight = 'bold';
     btn.style.fontSize = '16px';
-    btn.onclick = () => document.body.removeChild(modal);
+    btn.onclick = async () => {
+        await unlockNotificationAudio();
+        document.body.removeChild(modal);
+    };
 
     box.appendChild(title);
     box.appendChild(text);
@@ -123,6 +282,7 @@ async function prepararPedido(number, artist, title) {
                     },
                     (payload) => {
                         if (payload.new.estado === 'preparate') {
+                            playNotificationTwice();
                             mostrarAlertaElegante(`¡PREPÁRATE ${userName.toUpperCase()}!\n\nTu canción "${title}" es la siguiente.\n\nPendiente, puedes levantar la mano para ubicarte y que te lleven el micrófono.`);
                         }
                     }

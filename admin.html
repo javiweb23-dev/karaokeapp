@@ -16,6 +16,41 @@
         width: 100%; 
         z-index: 1000; 
     }
+    .lock-screen {
+        position: fixed;
+        inset: 0;
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    }
+    .lock-box {
+        width: calc(100% - 40px);
+        max-width: 360px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .lock-box input {
+        padding: 14px;
+        border-radius: 8px;
+        border: 1px solid #333;
+        background: #111;
+        color: #fff;
+        font-size: 18px;
+        text-align: center;
+    }
+    .lock-box button {
+        padding: 14px;
+        border: none;
+        border-radius: 8px;
+        background: #ff6600;
+        color: #fff;
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+    }
     .admin-container { 
         padding: 20px; 
         margin-top: 100px; 
@@ -27,33 +62,55 @@
         margin-bottom: 15px;
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: stretch;
         border-radius: 0 10px 10px 0;
+        gap: 14px;
     }
     .info { flex-grow: 1; }
     .info small { color: #888; }
     .info strong { color: #ff6600; font-size: 1.2em; }
     .info span { display: block; margin-top: 5px; font-size: 1.1em; }
-    
+    .acciones {
+        width: 180px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 10px;
+    }
     .btn-avisar {
-        background: #17a2b8; color: white; border: none; padding: 15px 20px;
-        border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 10px;
+        background: #ff6600;
+        color: #fff;
+        border: none;
+        padding: 18px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        width: 100%;
+        font-size: 16px;
     }
-    .btn-avisar:disabled { background: #444; color: #888; cursor: not-allowed; }
-    
-    .btn-aprobar {
-        background: #28a745; color: white; border: none; padding: 15px 25px;
-        border-radius: 5px; cursor: pointer; font-weight: bold;
+    .btn-avisar.enviado {
+        background: #ffc107;
+        color: #000;
     }
-    .btn-aprobar:disabled { background: #444; color: #888; cursor: not-allowed; border: 1px solid #555; }
-    
     .btn-eliminar {
-        background: #dc3545; color: white; border: none; padding: 15px;
-        margin-left: 10px; border-radius: 5px; cursor: pointer; font-weight: bold;
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        width: 100%;
     }
     </style>
 </head>
 <body>
+    <div class="lock-screen" id="lockScreen">
+        <div class="lock-box">
+            <input type="password" id="pinInput" placeholder="PIN de acceso" autocomplete="off">
+            <button id="enterPinBtn">ENTRAR</button>
+        </div>
+    </div>
     <div class="header">
         <h1>PANEL DE CONTROL</h1>
     </div>
@@ -67,9 +124,39 @@
         const SUPABASE_URL = 'https://mefrjbmjfdphdqndpzcw.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const lockScreen = document.getElementById('lockScreen');
+        const pinInput = document.getElementById('pinInput');
+        const enterPinBtn = document.getElementById('enterPinBtn');
+
+        function desbloquearAdmin() {
+            lockScreen.style.display = 'none';
+            pinInput.value = '';
+            pinInput.blur();
+        }
+
+        function validarPin() {
+            if (pinInput.value === '1234') {
+                sessionStorage.setItem('admin_access_validado', 'true');
+                desbloquearAdmin();
+                return;
+            }
+            alert('Acceso denegado');
+            pinInput.value = '';
+            pinInput.focus();
+        }
+
+        if (sessionStorage.getItem('admin_access_validado') === 'true') {
+            desbloquearAdmin();
+        } else {
+            pinInput.focus();
+        }
+
+        enterPinBtn.addEventListener('click', validarPin);
+        pinInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') validarPin();
+        });
 
         async function cargarPedidos() {
-            // AHORA INCLUIMOS LAS APROBADAS PARA QUE NO DESAPAREZCAN
             const { data, error } = await _supabase
                 .from('Solicitudes')
                 .select('*')
@@ -84,14 +171,8 @@
             data.forEach(pedido => {
                 const div = document.createElement('div');
                 div.className = 'pedido-card';
-                
-                // Lógica visual del botón AVISAR
-                const textoAvisar = pedido.estado === 'preparate' ? 'AVISADO ✓' : 'AVISAR';
-                const estadoAvisar = pedido.estado === 'preparate' ? 'disabled' : '';
-
-                // Lógica visual del botón APROBAR
-                const textoAprobar = pedido.estado === 'aprobada' ? 'APROBADO ✓' : 'APROBAR';
-                const estadoAprobar = pedido.estado === 'aprobada' ? 'disabled' : '';
+                const textoAvisar = pedido.estado === 'preparate' ? 'REENVIAR AVISO' : 'AVISAR';
+                const claseAvisar = pedido.estado === 'preparate' ? 'btn-avisar enviado' : 'btn-avisar';
 
                 div.innerHTML = `
                     <div class="info">
@@ -99,9 +180,8 @@
                         <strong>${pedido.nombre_usuario}</strong> pide:<br>
                         <span>${pedido.cancion_info} (#${pedido.numero_cancion})</span>
                     </div>
-                    <div>
-                        <button class="btn-avisar" onclick="avisarPedido(${pedido.id})" ${estadoAvisar}>${textoAvisar}</button>
-                        <button class="btn-aprobar" onclick="aprobarPedido(${pedido.id})" ${estadoAprobar}>${textoAprobar}</button>
+                    <div class="acciones">
+                        <button class="${claseAvisar}" onclick="avisarPedido(${pedido.id})">${textoAvisar}</button>
                         <button class="btn-eliminar" onclick="eliminarPedido(${pedido.id})">X</button>
                     </div>
                 `;
@@ -113,15 +193,6 @@
             const { error } = await _supabase
                 .from('Solicitudes')
                 .update({ estado: 'preparate' })
-                .eq('id', id);
-
-            if (!error) cargarPedidos();
-        }
-
-        async function aprobarPedido(id) {
-            const { error } = await _supabase
-                .from('Solicitudes')
-                .update({ estado: 'aprobada' })
                 .eq('id', id);
 
             if (!error) cargarPedidos();
