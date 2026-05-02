@@ -290,7 +290,7 @@ async function prepararPedido(number, artist, title) {
         .from('Solicitudes')
         .select('id', { count: 'exact', head: true })
         .eq('nombre_usuario', userName)
-        .eq('estado', 'pendiente');
+        .in('estado', ['pendiente', 'preparate']);
 
     if (activePendingError) {
         mostrarAlertaElegante("❌ Error: " + activePendingError.message);
