@@ -419,6 +419,7 @@ function applyFilters() {
 
         const cleanA = normalizeFilterText(s.artist);
         const cleanT = normalizeFilterText(s.title);
+        const cleanG = normalizeFilterText(s.genre);
         const numStr = String(s.number != null ? s.number : '');
         const cleanNum = normalizeFilterText(numStr);
 
@@ -426,6 +427,7 @@ function applyFilters() {
             term === '' ||
             cleanA.includes(term) ||
             cleanT.includes(term) ||
+            cleanG.includes(term) ||
             cleanNum.includes(term) ||
             numStr.includes(rawTerm);
 
