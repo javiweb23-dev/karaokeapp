@@ -265,7 +265,7 @@ async function prepararPedido(number, artist, title) {
     }
 
     if (requestedSongIds.includes(songId)) {
-        mostrarAlertaElegante('¡Ya pediste esta canción! Espera a cantarla antes de pedirla de nuevo');
+        mostrarAlertaElegante('Esta canción ya la pediste hoy, ¡intenta con otra para variar el repertorio!', 'error');
         return;
     }
 
@@ -298,7 +298,7 @@ async function prepararPedido(number, artist, title) {
     }
 
     if ((activePendingCount || 0) >= 3) {
-        mostrarAlertaElegante('¡Canta las que tienes en cola antes de pedir más!', 'error');
+        mostrarAlertaElegante('Ya tienes 3 canciones en cola. ¡Canta las que tienes antes de pedir más!', 'error');
         return;
     }
 

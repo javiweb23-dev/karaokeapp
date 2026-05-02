@@ -185,14 +185,28 @@
 
             if (error) return;
 
-            const { data: todasLasFilas, error: errorTotales } = await _supabase
-                .from('Solicitudes')
-                .select('id, nombre_usuario, created_at');
+            let todasLasFilas = [];
+            let rangoInicio = 0;
+            const tamRango = 1000;
+            let errorTotales = null;
+            while (true) {
+                const res = await _supabase
+                    .from('Solicitudes')
+                    .select('id, nombre_usuario, created_at')
+                    .order('id', { ascending: true })
+                    .range(rangoInicio, rangoInicio + tamRango - 1);
+                errorTotales = res.error;
+                if (errorTotales) break;
+                const trozo = res.data || [];
+                todasLasFilas = todasLasFilas.concat(trozo);
+                if (trozo.length < tamRango) break;
+                rangoInicio += tamRango;
+            }
 
             if (errorTotales) return;
 
             const porUsuario = {};
-            (todasLasFilas || []).forEach((fila) => {
+            todasLasFilas.forEach((fila) => {
                 const clave = (fila.nombre_usuario || '').trim() || 'Sin nombre';
                 if (!porUsuario[clave]) porUsuario[clave] = [];
                 porUsuario[clave].push(fila);
