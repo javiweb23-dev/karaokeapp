@@ -243,6 +243,7 @@ async function prepararPedido(number, artist, title) {
     let userName = localStorage.getItem('karaoke_user_name');
     const songId = number.toString();
     const userSongsKey = 'karaoke_requested_song_ids';
+    const bloqueoMs = 18000000;
 
     if (!userName || userName.trim() === "") {
         userName = prompt("Tu nombre para la lista:");
@@ -254,17 +255,30 @@ async function prepararPedido(number, artist, title) {
         }
     }
 
-    let requestedSongIds = [];
+    let requestedSongs = [];
     try {
-        requestedSongIds = JSON.parse(localStorage.getItem(userSongsKey) || '[]');
-        if (!Array.isArray(requestedSongIds)) {
-            requestedSongIds = [];
+        const raw = JSON.parse(localStorage.getItem(userSongsKey) || '[]');
+        if (Array.isArray(raw)) {
+            requestedSongs = raw
+                .map((item) => {
+                    if (typeof item === 'string') return { id: item, timestamp: 0 };
+                    if (item && typeof item === 'object' && item.id != null) {
+                        return {
+                            id: String(item.id),
+                            timestamp: Number(item.timestamp) || 0
+                        };
+                    }
+                    return null;
+                })
+                .filter(Boolean);
         }
     } catch (e) {
-        requestedSongIds = [];
+        requestedSongs = [];
     }
 
-    if (requestedSongIds.includes(songId)) {
+    const ahora = Date.now();
+    const indiceBloqueo = requestedSongs.findIndex((x) => x.id === songId);
+    if (indiceBloqueo !== -1 && ahora - requestedSongs[indiceBloqueo].timestamp < bloqueoMs) {
         mostrarAlertaElegante('Esta canción ya la pediste hoy, ¡intenta con otra para variar el repertorio!', 'error');
         return;
     }
@@ -320,8 +334,14 @@ async function prepararPedido(number, artist, title) {
         mostrarAlertaElegante("✅ ¡Recibido!\n\nTu canción ya está en la lista.\n\nMantén esta página abierta para avisarte cuando te toque cantar.");
 
         if (data && data.length > 0) {
-            requestedSongIds.push(songId);
-            localStorage.setItem(userSongsKey, JSON.stringify([...new Set(requestedSongIds)]));
+            const ts = Date.now();
+            const idx = requestedSongs.findIndex((x) => x.id === songId);
+            if (idx !== -1) {
+                requestedSongs[idx] = { id: songId, timestamp: ts };
+            } else {
+                requestedSongs.push({ id: songId, timestamp: ts });
+            }
+            localStorage.setItem(userSongsKey, JSON.stringify(requestedSongs));
             const idUnico = data[0].id;
 
             _supabase
