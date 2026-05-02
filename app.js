@@ -173,7 +173,8 @@ function playNotificationTwice() {
     setTimeout(playOnce, 900);
 }
 
-function mostrarAlertaElegante(mensaje) {
+function mostrarAlertaElegante(mensaje, tipo) {
+    const accent = tipo === 'error' ? '#dc3545' : '#ff6600';
     const modal = document.createElement('div');
     modal.style.position = 'fixed';
     modal.style.top = '0'; 
@@ -193,7 +194,7 @@ function mostrarAlertaElegante(mensaje) {
     box.style.backgroundColor = '#1a1a1a';
     box.style.padding = '25px';
     box.style.borderRadius = '12px';
-    box.style.border = '2px solid #ff6600';
+    box.style.border = '2px solid ' + accent;
     box.style.textAlign = 'center';
     box.style.width = 'calc(100% - 40px)'; // 100% menos 20px de cada lado para que respire
     box.style.maxWidth = '400px'; 
@@ -204,7 +205,7 @@ function mostrarAlertaElegante(mensaje) {
 
     const title = document.createElement('h3');
     title.innerText = '🎤 Karaoke Latino Dice:';
-    title.style.color = '#ff6600';
+    title.style.color = accent;
     title.style.margin = '0 0 15px 0';
 
     const text = document.createElement('p');
@@ -217,7 +218,7 @@ function mostrarAlertaElegante(mensaje) {
 
     const btn = document.createElement('button');
     btn.innerText = 'ACEPTAR';
-    btn.style.backgroundColor = '#ff6600';
+    btn.style.backgroundColor = accent;
     btn.style.color = 'white';
     btn.style.border = 'none';
     btn.style.padding = '12px 25px';
@@ -281,7 +282,7 @@ async function prepararPedido(number, artist, title) {
     }
 
     if (globalDuplicate && globalDuplicate.length > 0) {
-        mostrarAlertaElegante('Esta canción ya está en la lista. ¡Búscala para cantarla en grupo!');
+        mostrarAlertaElegante('Esta canción ya la pidieron, espera a que la canten para que vuelva a estar disponible, intenta con otra canción', 'error');
         return;
     }
 
@@ -297,7 +298,7 @@ async function prepararPedido(number, artist, title) {
     }
 
     if ((activePendingCount || 0) >= 3) {
-        mostrarAlertaElegante('¡Canta las que tienes en cola antes de pedir más!');
+        mostrarAlertaElegante('¡Canta las que tienes en cola antes de pedir más!', 'error');
         return;
     }
 
