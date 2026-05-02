@@ -1590,6 +1590,4 @@ const songsDatabase = [
     {number: 1588, artist: "ZION LENNOX", title: "YO VOY", genre: "REGGAETON/URBANO", language: "ESPAÑOL"},
     {number: 1589, artist: "ZUCCHERO", title: "BAILA MORENA", genre: "POP", language: "ESPAÑOL"},
     
-
-
 ];

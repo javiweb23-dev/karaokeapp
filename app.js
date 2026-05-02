@@ -240,14 +240,65 @@ function mostrarAlertaElegante(mensaje) {
 
 async function prepararPedido(number, artist, title) {
     let userName = localStorage.getItem('karaoke_user_name');
+    const songId = number.toString();
+    const userSongsKey = 'karaoke_requested_song_ids';
 
     if (!userName || userName.trim() === "") {
         userName = prompt("Tu nombre para la lista:");
         if (userName && userName.trim() !== "") {
-            localStorage.setItem('karaoke_user_name', userName.trim());
+            userName = userName.trim();
+            localStorage.setItem('karaoke_user_name', userName);
         } else {
             return;
         }
+    }
+
+    let requestedSongIds = [];
+    try {
+        requestedSongIds = JSON.parse(localStorage.getItem(userSongsKey) || '[]');
+        if (!Array.isArray(requestedSongIds)) {
+            requestedSongIds = [];
+        }
+    } catch (e) {
+        requestedSongIds = [];
+    }
+
+    if (requestedSongIds.includes(songId)) {
+        mostrarAlertaElegante('¡Ya pediste esta canción! Espera a cantarla antes de pedirla de nuevo');
+        return;
+    }
+
+    const { data: globalDuplicate, error: globalDuplicateError } = await _supabase
+        .from('Solicitudes')
+        .select('id')
+        .eq('numero_cancion', songId)
+        .in('estado', ['pendiente', 'preparate'])
+        .limit(1);
+
+    if (globalDuplicateError) {
+        mostrarAlertaElegante("❌ Error: " + globalDuplicateError.message);
+        return;
+    }
+
+    if (globalDuplicate && globalDuplicate.length > 0) {
+        mostrarAlertaElegante('Esta canción ya está en la lista. ¡Búscala para cantarla en grupo!');
+        return;
+    }
+
+    const { count: activePendingCount, error: activePendingError } = await _supabase
+        .from('Solicitudes')
+        .select('id', { count: 'exact', head: true })
+        .eq('nombre_usuario', userName)
+        .eq('estado', 'pendiente');
+
+    if (activePendingError) {
+        mostrarAlertaElegante("❌ Error: " + activePendingError.message);
+        return;
+    }
+
+    if ((activePendingCount || 0) >= 3) {
+        mostrarAlertaElegante('¡Canta las que tienes en cola antes de pedir más!');
+        return;
     }
 
     const { data, error } = await _supabase
@@ -256,7 +307,7 @@ async function prepararPedido(number, artist, title) {
             { 
                 nombre_usuario: userName, 
                 cancion_info: `${artist} - ${title}`, 
-                numero_cancion: number.toString(),
+                numero_cancion: songId,
                 estado: 'pendiente' 
             }
         ])
@@ -268,6 +319,8 @@ async function prepararPedido(number, artist, title) {
         mostrarAlertaElegante("✅ ¡Recibido!\n\nTu canción ya está en la lista.\n\nMantén esta página abierta para avisarte cuando te toque cantar.");
 
         if (data && data.length > 0) {
+            requestedSongIds.push(songId);
+            localStorage.setItem(userSongsKey, JSON.stringify([...new Set(requestedSongIds)]));
             const idUnico = data[0].id;
 
             _supabase
@@ -290,6 +343,18 @@ async function prepararPedido(number, artist, title) {
                 .subscribe();
         }
     }
+}
+
+function manejarClickPedido(button, number, artist, title) {
+    if (!button || button.disabled) return;
+    const originalText = button.innerText;
+    button.disabled = true;
+    button.innerText = 'ENVIANDO...';
+    setTimeout(() => {
+        button.disabled = false;
+        button.innerText = originalText;
+    }, 3000);
+    prepararPedido(number, artist, title);
 }
 
 function renderSongs(songs) {
@@ -317,7 +382,7 @@ function renderSongs(songs) {
         const safeTitle = song.title ? song.title.replace(/'/g, "\\'") : "Desconocido";
         
         row.innerHTML = `
-            <td><button class="btn-pedir" onclick="prepararPedido('${song.number}', '${safeArtist}', '${safeTitle}')">PEDIR</button></td>
+            <td><button class="btn-pedir" onclick="manejarClickPedido(this, '${song.number}', '${safeArtist}', '${safeTitle}')">PEDIR</button></td>
             <td><strong>${song.artist}</strong></td>
             <td>${song.title}</td>
             <td style="color:#888">${song.genre}</td>

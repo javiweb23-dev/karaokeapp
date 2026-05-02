@@ -70,6 +70,26 @@
     .info small { color: #888; }
     .info strong { color: #ff6600; font-size: 1.2em; }
     .info span { display: block; margin-top: 5px; font-size: 1.1em; }
+    .usuario-linea {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 2px;
+    }
+    .contador-pedidos {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 28px;
+        padding: 0 8px;
+        border-radius: 999px;
+        background: #ff6600;
+        color: #fff;
+        font-size: 12px;
+        font-weight: bold;
+        line-height: 1;
+    }
     .acciones {
         width: 180px;
         display: flex;
@@ -167,8 +187,12 @@
 
             const contenedor = document.getElementById('listaPedidos');
             contenedor.innerHTML = '';
+            const pedidosPorUsuario = {};
 
             data.forEach(pedido => {
+                const nombreUsuario = (pedido.nombre_usuario || '').trim() || 'Sin nombre';
+                pedidosPorUsuario[nombreUsuario] = (pedidosPorUsuario[nombreUsuario] || 0) + 1;
+                const ordenPedido = pedidosPorUsuario[nombreUsuario];
                 const div = document.createElement('div');
                 div.className = 'pedido-card';
                 const textoAvisar = pedido.estado === 'preparate' ? 'REENVIAR AVISO' : 'AVISAR';
@@ -177,7 +201,11 @@
                 div.innerHTML = `
                     <div class="info">
                         <small>${new Date(pedido.created_at).toLocaleTimeString()}</small><br>
-                        <strong>${pedido.nombre_usuario}</strong> pide:<br>
+                        <div class="usuario-linea">
+                            <strong>${nombreUsuario}</strong>
+                            <span class="contador-pedidos">#${ordenPedido}</span>
+                        </div>
+                        pide:<br>
                         <span>${pedido.cancion_info} (#${pedido.numero_cancion})</span>
                     </div>
                     <div class="acciones">
