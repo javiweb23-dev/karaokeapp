@@ -6,12 +6,11 @@ let allSongs = [];
 const ALERT_SOUND_URL = 'https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg';
 let notificationAudio = null;
 let notificationAudioReady = false;
-let deferredInstallPrompt = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', unlockNotificationAudio, { once: true });
     document.addEventListener('touchstart', unlockNotificationAudio, { once: true });
-    setupInstallAndQr();
+    setupShareQr();
     setupStickyOffsets();
     setTimeout(() => {
         if (typeof songsDatabase !== 'undefined') {
@@ -46,13 +45,19 @@ async function updateLiveStatus() {
         .select('nombre_usuario')
         .eq('estado', 'preparate')
         .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
         .limit(1)
         .maybeSingle();
-    if (error || !data || !data.nombre_usuario) {
+    if (error || !data) {
         liveSingerText.innerText = '🎤 ESPERANDO PRÓXIMO CANTANTE...';
         return;
     }
-    liveSingerText.innerText = `🎤 CANTANDO AHORA: ${data.nombre_usuario}`;
+    const nombre = String(data.nombre_usuario || '').trim();
+    if (!nombre) {
+        liveSingerText.innerText = '🎤 ESPERANDO PRÓXIMO CANTANTE...';
+        return;
+    }
+    liveSingerText.innerText = `🎤 CANTANDO AHORA: ${nombre}`;
 }
 
 function startLiveStatusTracking() {
@@ -74,56 +79,14 @@ function generateShareQrUrl(size) {
     return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(shareUrl)}`;
 }
 
-function setupInstallAndQr() {
-    const installBtn = document.getElementById('installBtn');
-    const installNote = document.getElementById('installNote');
+function setupShareQr() {
     const openQrBtn = document.getElementById('openQrBtn');
     const closeQrBtn = document.getElementById('closeQrBtn');
     const qrModal = document.getElementById('qrModal');
     const qrModalContent = document.querySelector('.qr-modal-content');
     const qrImage = document.getElementById('qrImage');
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
 
-    if (!installBtn || !installNote || !openQrBtn || !closeQrBtn || !qrModal || !qrModalContent || !qrImage) return;
-
-    const setInstallVisibility = (visible) => {
-        installBtn.style.display = visible ? 'inline-flex' : 'none';
-        installNote.style.display = visible ? 'block' : 'none';
-    };
-
-    if (isStandalone) {
-        setInstallVisibility(false);
-    } else if (isIos) {
-        setInstallVisibility(true);
-    } else {
-        setInstallVisibility(false);
-    }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredInstallPrompt = e;
-        if (!isStandalone) {
-            setInstallVisibility(true);
-        }
-    });
-
-    installBtn.addEventListener('click', async () => {
-        if (deferredInstallPrompt) {
-            deferredInstallPrompt.prompt();
-            await deferredInstallPrompt.userChoice;
-            deferredInstallPrompt = null;
-            setInstallVisibility(false);
-            return;
-        }
-        if (isIos && !isStandalone) {
-            mostrarAlertaElegante('Para guardar, pulsa el botón Compartir y luego Añadir a la pantalla de inicio. Tu información permanece privada siempre');
-        }
-    });
-
-    window.addEventListener('appinstalled', () => {
-        setInstallVisibility(false);
-    });
+    if (!openQrBtn || !closeQrBtn || !qrModal || !qrModalContent || !qrImage) return;
 
     openQrBtn.addEventListener('click', () => {
         const modalWidth = qrModalContent.clientWidth;
@@ -141,6 +104,13 @@ function setupInstallAndQr() {
             qrModal.style.display = 'none';
         }
     });
+}
+
+function normalizeFilterText(str) {
+    return String(str || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
 }
 
 async function unlockNotificationAudio() {
@@ -382,13 +352,13 @@ function renderSongs(songs) {
     const tbody = document.getElementById('songsTableBody');
     const loading = document.getElementById('loading');
     const noResults = document.getElementById('noResults');
-    
+
     if (loading) loading.style.display = 'none';
     if (!tbody) return;
-    
+
     tbody.innerHTML = '';
 
-    if (songs.length === 0) {
+    if (!songs || songs.length === 0) {
         if (noResults) noResults.style.display = 'block';
         return;
     }
@@ -396,41 +366,69 @@ function renderSongs(songs) {
 
     const fragment = document.createDocumentFragment();
 
-    songs.forEach(song => {
+    songs.forEach((song) => {
         const row = document.createElement('tr');
-        
-        const safeArtist = song.artist ? song.artist.replace(/'/g, "\\'") : "Desconocido";
-        const safeTitle = song.title ? song.title.replace(/'/g, "\\'") : "Desconocido";
-        
-        row.innerHTML = `
-            <td><button class="btn-pedir" onclick="manejarClickPedido(this, '${song.number}', '${safeArtist}', '${safeTitle}')">PEDIR</button></td>
-            <td><strong>${song.artist}</strong></td>
-            <td>${song.title}</td>
-            <td style="color:#888">${song.genre}</td>
-        `;
+        const tdBtn = document.createElement('td');
+        const btn = document.createElement('button');
+        btn.className = 'btn-pedir';
+        btn.textContent = 'PEDIR';
+        btn.addEventListener('click', () => {
+            manejarClickPedido(
+                btn,
+                String(song.number),
+                song.artist != null && song.artist !== '' ? String(song.artist) : 'Desconocido',
+                song.title != null && song.title !== '' ? String(song.title) : 'Desconocido'
+            );
+        });
+        tdBtn.appendChild(btn);
+
+        const tdArt = document.createElement('td');
+        const strong = document.createElement('strong');
+        strong.textContent = song.artist != null && song.artist !== '' ? String(song.artist) : 'Desconocido';
+        tdArt.appendChild(strong);
+
+        const tdTit = document.createElement('td');
+        tdTit.textContent = song.title != null && song.title !== '' ? String(song.title) : 'Desconocido';
+
+        const tdGen = document.createElement('td');
+        tdGen.style.color = '#888';
+        tdGen.textContent = song.genre != null ? String(song.genre) : '';
+
+        row.appendChild(tdBtn);
+        row.appendChild(tdArt);
+        row.appendChild(tdTit);
+        row.appendChild(tdGen);
         fragment.appendChild(row);
     });
-    
+
     tbody.appendChild(fragment);
 }
 
 function applyFilters() {
     const searchInput = document.getElementById('searchInput');
     const langFilter = document.getElementById('languageFilter');
-    
-    const term = searchInput ? searchInput.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
-    const lang = langFilter ? langFilter.value.toLowerCase() : "";
 
-    const filtered = allSongs.filter(s => {
-        const matchLang = lang === "" || s.language.toLowerCase().includes(lang);
-        const cleanA = s.artist.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const cleanT = s.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        
-        const matchSearch = term === "" || 
-                            cleanA.includes(term) || 
-                            cleanT.includes(term) || 
-                            s.number.toString().includes(term);
-                            
+    const rawTerm = searchInput ? searchInput.value.trim() : '';
+    const term = normalizeFilterText(rawTerm);
+    const langVal = langFilter ? langFilter.value : '';
+    const langNorm = normalizeFilterText(langVal);
+
+    const filtered = allSongs.filter((s) => {
+        const songLang = normalizeFilterText(s.language);
+        const matchLang = langNorm === '' || songLang.includes(langNorm);
+
+        const cleanA = normalizeFilterText(s.artist);
+        const cleanT = normalizeFilterText(s.title);
+        const numStr = String(s.number != null ? s.number : '');
+        const cleanNum = normalizeFilterText(numStr);
+
+        const matchSearch =
+            term === '' ||
+            cleanA.includes(term) ||
+            cleanT.includes(term) ||
+            cleanNum.includes(term) ||
+            numStr.includes(rawTerm);
+
         return matchLang && matchSearch;
     });
     renderSongs(filtered);

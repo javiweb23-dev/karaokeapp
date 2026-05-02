@@ -13,14 +13,16 @@
     <link rel="stylesheet" href="style.css?v=1.1">
 </head>
 <body>
-    <button id="installBtn" class="install-btn" style="display:none;">📲 AÑADIR A INICIO</button>
-    <p id="installNote" class="install-note" style="display:none;">Nota: Esta acción solo crea un acceso directo; la app no se instalará en su teléfono ni tendrá acceso por ningún motivo a su información</p>
     <div class="header">
         <img src="logo.png" alt="Logo" class="logo">
     </div>
     <div class="live-status" id="liveStatusBar">
-        <strong>ESTADO EN VIVO</strong>
-        <span id="liveSingerText">🎤 CANTANDO AHORA: ---</span>
+        <div class="live-status-head">
+            <strong>ESTADO EN VIVO</strong>
+        </div>
+        <div class="live-status-body">
+            <span id="liveSingerText">🎤 CANTANDO AHORA: ---</span>
+        </div>
     </div>
 
     <div class="search-container">
