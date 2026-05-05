@@ -7,23 +7,26 @@ let currentLang = 'español';
 const ALERT_SOUND_URL = 'https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg';
 let notificationAudio = null;
 let notificationAudioReady = false;
+const DEFAULT_PRIMARY_COLOR = '#ff6600';
+const DEFAULT_LOGO_URL = 'logo.png';
+let currentDjId = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('click', unlockNotificationAudio, { once: true });
     document.addEventListener('touchstart', unlockNotificationAudio, { once: true });
+    currentDjId = detectDjIdFromUrl();
+    if (!currentDjId) {
+        document.getElementById('loading').innerText = 'No se detecto el DJ en la URL.';
+        return;
+    }
     setupShareQr();
     setupStickyOffsets();
-    setTimeout(() => {
-        if (typeof songsDatabase !== 'undefined') {
-            allSongs = [...songsDatabase];
-            syncLangToggleButton();
-            applyFilters();
-        } else {
-            document.getElementById('loading').innerText = "Error al leer las canciones. Refresca la página.";
-        }
-        setupEventListeners();
-        startLiveStatusTracking();
-    }, 100);
+    await loadBrandingByDj();
+    await loadSongsByDj();
+    syncLangToggleButton();
+    applyFilters();
+    setupEventListeners();
+    startLiveStatusTracking();
 });
 
 function setupStickyOffsets() {
@@ -37,12 +40,68 @@ function setupStickyOffsets() {
     window.addEventListener('resize', syncOffsets);
 }
 
+function detectDjIdFromUrl() {
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const djIndex = parts.findIndex((part) => part.toLowerCase() === 'dj');
+    if (djIndex !== -1 && parts[djIndex + 1]) {
+        return decodeURIComponent(parts[djIndex + 1]).trim().toLowerCase();
+    }
+    const queryId = new URLSearchParams(window.location.search).get('id_dj');
+    if (queryId) return queryId.trim().toLowerCase();
+    return null;
+}
+
+function setBranding(logoUrl, primaryColor) {
+    const color = /^#[0-9a-f]{6}$/i.test(String(primaryColor || '')) ? primaryColor : DEFAULT_PRIMARY_COLOR;
+    document.documentElement.style.setProperty('--primary-color', color);
+    const logo = document.querySelector('.logo');
+    if (logo) {
+        logo.src = logoUrl || DEFAULT_LOGO_URL;
+    }
+}
+
+async function loadBrandingByDj() {
+    const { data, error } = await _supabase
+        .from('Djs')
+        .select('logo_url, color_principal')
+        .eq('id_dj', currentDjId)
+        .limit(1)
+        .maybeSingle();
+    if (error || !data) {
+        setBranding(DEFAULT_LOGO_URL, DEFAULT_PRIMARY_COLOR);
+        return;
+    }
+    setBranding(data.logo_url, data.color_principal);
+}
+
+async function loadSongsByDj() {
+    const loading = document.getElementById('loading');
+    const { data, error } = await _supabase
+        .from('Canciones')
+        .select('numero, artista, titulo, genero, idioma')
+        .eq('id_dj', currentDjId)
+        .order('numero', { ascending: true });
+    if (error) {
+        if (loading) loading.innerText = 'Error al leer las canciones. Refresca la pagina.';
+        allSongs = [];
+        return;
+    }
+    allSongs = (data || []).map((song) => ({
+        number: song.numero,
+        artist: song.artista,
+        title: song.titulo,
+        genre: song.genero,
+        language: song.idioma
+    }));
+}
+
 async function updateLiveStatus() {
     const liveSingerText = document.getElementById('liveSingerText');
     if (!liveSingerText) return;
     const { data, error } = await _supabase
         .from('Solicitudes')
         .select('nombre_usuario')
+        .eq('id_dj', currentDjId)
         .eq('estado', 'preparate')
         .order('created_at', { ascending: false })
         .order('id', { ascending: false })
@@ -67,7 +126,9 @@ function startLiveStatusTracking() {
         .on(
             'postgres_changes',
             { event: '*', schema: 'public', table: 'Solicitudes' },
-            () => {
+            (payload) => {
+                if (payload.new && payload.new.id_dj !== currentDjId) return;
+                if (payload.old && payload.old.id_dj !== currentDjId) return;
                 updateLiveStatus();
             }
         )
@@ -144,20 +205,22 @@ function playNotificationTwice() {
 }
 
 function mostrarAlertaElegante(mensaje, tipo) {
-    const accent = tipo === 'error' ? '#dc3545' : '#ff6600';
+    const accent = tipo === 'error'
+        ? '#dc3545'
+        : getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || DEFAULT_PRIMARY_COLOR;
     const modal = document.createElement('div');
     modal.style.position = 'fixed';
     modal.style.top = '0'; 
     modal.style.left = '0'; 
-    modal.style.width = '100vw'; // Forzamos el ancho exacto de la pantalla
-    modal.style.height = '100vh'; // Forzamos el alto exacto de la pantalla
+    modal.style.width = '100vw';
+    modal.style.height = '100vh';
     modal.style.backgroundColor = 'rgba(0,0,0,0.85)';
     modal.style.display = 'flex'; 
     modal.style.justifyContent = 'center'; 
     modal.style.alignItems = 'center';
     modal.style.zIndex = '9999';
-    modal.style.margin = '0'; // Reseteo de seguridad
-    modal.style.padding = '0'; // Reseteo de seguridad
+    modal.style.margin = '0';
+    modal.style.padding = '0';
     modal.style.boxSizing = 'border-box';
 
     const box = document.createElement('div');
@@ -166,12 +229,12 @@ function mostrarAlertaElegante(mensaje, tipo) {
     box.style.borderRadius = '12px';
     box.style.border = '2px solid ' + accent;
     box.style.textAlign = 'center';
-    box.style.width = 'calc(100% - 40px)'; // 100% menos 20px de cada lado para que respire
+    box.style.width = 'calc(100% - 40px)';
     box.style.maxWidth = '400px'; 
     box.style.boxSizing = 'border-box'; 
     box.style.color = 'white';
     box.style.boxShadow = '0 10px 25px rgba(255, 102, 0, 0.2)';
-    box.style.margin = '0'; // <--- EL ANTÍDOTO: Evita que tu style.css lo empuje a la derecha
+    box.style.margin = '0';
 
     const title = document.createElement('h3');
     title.innerText = '🎤 Karaoke Latino Dice:';
@@ -184,7 +247,7 @@ function mostrarAlertaElegante(mensaje, tipo) {
     text.style.fontSize = '16px';
     text.style.lineHeight = '1.5';
     text.style.wordBreak = 'break-word';
-    text.style.margin = '0'; // Reseteo de seguridad
+    text.style.margin = '0';
 
     const btn = document.createElement('button');
     btn.innerText = 'ACEPTAR';
@@ -256,6 +319,7 @@ async function prepararPedido(number, artist, title) {
     const { data: globalDuplicate, error: globalDuplicateError } = await _supabase
         .from('Solicitudes')
         .select('id')
+        .eq('id_dj', currentDjId)
         .eq('numero_cancion', songId)
         .in('estado', ['pendiente', 'preparate'])
         .limit(1);
@@ -273,6 +337,7 @@ async function prepararPedido(number, artist, title) {
     const { count: activePendingCount, error: activePendingError } = await _supabase
         .from('Solicitudes')
         .select('id', { count: 'exact', head: true })
+        .eq('id_dj', currentDjId)
         .eq('nombre_usuario', userName)
         .in('estado', ['pendiente', 'preparate']);
 
@@ -293,6 +358,7 @@ async function prepararPedido(number, artist, title) {
                 nombre_usuario: userName, 
                 cancion_info: `${artist} - ${title}`, 
                 numero_cancion: songId,
+                id_dj: currentDjId,
                 estado: 'pendiente' 
             }
         ])

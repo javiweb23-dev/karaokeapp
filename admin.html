@@ -6,9 +6,10 @@
     <title>Admin - Karaoke Latino</title>
     <link rel="stylesheet" href="style.css">
     <style>
+    :root { --primary-color: #ff6600; }
     body { background-color: #000; color: #fff; font-family: sans-serif; margin: 0; }
     .header { 
-        background-color: #ff6600; 
+        background-color: var(--primary-color); 
         text-align: center; 
         padding: 15px; 
         position: fixed; 
@@ -45,7 +46,7 @@
         padding: 14px;
         border: none;
         border-radius: 8px;
-        background: #ff6600;
+        background: var(--primary-color);
         color: #fff;
         font-weight: bold;
         font-size: 16px;
@@ -57,7 +58,7 @@
     }
     .pedido-card {
         background: #1a1a1a;
-        border-left: 5px solid #ff6600;
+        border-left: 5px solid var(--primary-color);
         padding: 20px;
         margin-bottom: 15px;
         display: flex;
@@ -68,7 +69,7 @@
     }
     .info { flex-grow: 1; }
     .info small { color: #888; }
-    .info strong { color: #ff6600; font-size: 1.2em; }
+    .info strong { color: var(--primary-color); font-size: 1.2em; }
     .info span { display: block; margin-top: 5px; font-size: 1.1em; }
     .usuario-linea {
         display: inline-flex;
@@ -84,7 +85,7 @@
         height: 28px;
         padding: 0 8px;
         border-radius: 999px;
-        background: #ff6600;
+        background: var(--primary-color);
         color: #fff;
         font-size: 12px;
         font-weight: bold;
@@ -98,7 +99,7 @@
         gap: 10px;
     }
     .btn-avisar {
-        background: #ff6600;
+        background: var(--primary-color);
         color: #fff;
         border: none;
         padding: 18px 16px;
@@ -122,6 +123,46 @@
         font-weight: bold;
         width: 100%;
     }
+    .admin-tools {
+        margin-bottom: 18px;
+        display: flex;
+        justify-content: flex-end;
+    }
+    .toggle-importer-btn {
+        border: none;
+        border-radius: 8px;
+        padding: 10px 14px;
+        cursor: pointer;
+        font-weight: 700;
+        background: var(--primary-color);
+        color: #fff;
+    }
+    .importer-section {
+        display: none;
+        margin-bottom: 18px;
+        padding: 14px;
+        background: #111;
+        border: 1px solid #333;
+        border-radius: 10px;
+    }
+    .importer-section.visible {
+        display: block;
+    }
+    .dropzone {
+        border: 2px dashed var(--primary-color);
+        border-radius: 10px;
+        padding: 24px;
+        text-align: center;
+        color: #bbb;
+    }
+    .dropzone.dragover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+    #importStatus {
+        margin-top: 10px;
+        min-height: 20px;
+        font-size: 14px;
+    }
     </style>
 </head>
 <body>
@@ -136,17 +177,67 @@
     </div>
 
     <div class="admin-container">
+        <div class="admin-tools">
+            <button id="toggleImporterBtn" class="toggle-importer-btn">IMPORTAR CANCIONES</button>
+        </div>
+        <div id="importerSection" class="importer-section">
+            <div id="dropzone" class="dropzone">
+                Arrastra un archivo CSV o Excel aqui, o haz clic para seleccionarlo.
+                <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display:none;">
+            </div>
+            <div id="importStatus"></div>
+        </div>
         <div id="listaPedidos"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
         const SUPABASE_URL = 'https://mefrjbmjfdphdqndpzcw.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const DEFAULT_PRIMARY_COLOR = '#ff6600';
         const lockScreen = document.getElementById('lockScreen');
         const pinInput = document.getElementById('pinInput');
         const enterPinBtn = document.getElementById('enterPinBtn');
+        const toggleImporterBtn = document.getElementById('toggleImporterBtn');
+        const importerSection = document.getElementById('importerSection');
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const importStatus = document.getElementById('importStatus');
+        const currentDjId = detectDjIdFromUrl();
+
+        function detectDjIdFromUrl() {
+            const parts = window.location.pathname.split('/').filter(Boolean);
+            const djIndex = parts.findIndex((part) => part.toLowerCase() === 'dj');
+            if (djIndex !== -1 && parts[djIndex + 1]) {
+                return decodeURIComponent(parts[djIndex + 1]).trim().toLowerCase();
+            }
+            const queryId = new URLSearchParams(window.location.search).get('id_dj');
+            if (queryId) return queryId.trim().toLowerCase();
+            return null;
+        }
+
+        function setStatus(msg, isError) {
+            importStatus.textContent = msg;
+            importStatus.style.color = isError ? '#ff4d4f' : '#9be564';
+        }
+
+        function setBranding(primaryColor) {
+            const color = /^#[0-9a-f]{6}$/i.test(String(primaryColor || '')) ? primaryColor : DEFAULT_PRIMARY_COLOR;
+            document.documentElement.style.setProperty('--primary-color', color);
+        }
+
+        async function loadBrandingByDj() {
+            if (!currentDjId) return;
+            const { data } = await _supabase
+                .from('Djs')
+                .select('color_principal')
+                .eq('id_dj', currentDjId)
+                .limit(1)
+                .maybeSingle();
+            setBranding(data && data.color_principal ? data.color_principal : DEFAULT_PRIMARY_COLOR);
+        }
 
         function desbloquearAdmin() {
             lockScreen.style.display = 'none';
@@ -165,6 +256,95 @@
             pinInput.focus();
         }
 
+        function mapRowToSong(row) {
+            const numero = String(row.numero || row.number || row.id || '').trim();
+            const artista = String(row.artista || row.artist || '').trim();
+            const titulo = String(row.titulo || row.title || '').trim();
+            const genero = String(row.genero || row.genre || '').trim();
+            const idioma = String(row.idioma || row.language || '').trim().toLowerCase();
+            if (!numero || !artista || !titulo) return null;
+            return {
+                id_dj: currentDjId,
+                numero,
+                artista,
+                titulo,
+                genero,
+                idioma: idioma || 'español'
+            };
+        }
+
+        async function importarCancionesDesdeArchivo(file) {
+            if (!currentDjId) {
+                setStatus('No se detecto id_dj en la URL.', true);
+                return;
+            }
+            setStatus('Procesando archivo...', false);
+            let rows = [];
+            try {
+                const ext = (file.name.split('.').pop() || '').toLowerCase();
+                if (ext === 'csv') {
+                    const text = await file.text();
+                    const workbook = XLSX.read(text, { type: 'string' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+                } else {
+                    const buffer = await file.arrayBuffer();
+                    const workbook = XLSX.read(buffer, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+                }
+            } catch (e) {
+                setStatus('No se pudo leer el archivo.', true);
+                return;
+            }
+
+            const songs = rows.map(mapRowToSong).filter(Boolean);
+            if (!songs.length) {
+                setStatus('No se encontraron canciones validas.', true);
+                return;
+            }
+
+            const { error } = await _supabase.from('Canciones').upsert(songs, {
+                onConflict: 'id_dj,numero',
+                ignoreDuplicates: false
+            });
+            if (error) {
+                setStatus('Error al importar: ' + error.message, true);
+                return;
+            }
+            setStatus(`Importacion completada. ${songs.length} canciones procesadas.`, false);
+        }
+
+        function setupImporter() {
+            toggleImporterBtn.addEventListener('click', () => {
+                importerSection.classList.toggle('visible');
+            });
+            dropzone.addEventListener('click', () => fileInput.click());
+            ['dragenter', 'dragover'].forEach((eventName) => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.add('dragover');
+                });
+            });
+            ['dragleave', 'drop'].forEach((eventName) => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.remove('dragover');
+                });
+            });
+            dropzone.addEventListener('drop', async (e) => {
+                const files = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files : [];
+                if (files.length) await importarCancionesDesdeArchivo(files[0]);
+            });
+            fileInput.addEventListener('change', async (e) => {
+                const files = e.target.files || [];
+                if (files.length) await importarCancionesDesdeArchivo(files[0]);
+                fileInput.value = '';
+            });
+        }
+
         if (sessionStorage.getItem('admin_access_validado') === 'true') {
             desbloquearAdmin();
         } else {
@@ -177,9 +357,11 @@
         });
 
         async function cargarPedidos() {
+            if (!currentDjId) return;
             const { data, error } = await _supabase
                 .from('Solicitudes')
                 .select('*')
+                .eq('id_dj', currentDjId)
                 .in('estado', ['pendiente', 'preparate'])
                 .order('created_at', { ascending: true });
 
@@ -193,6 +375,7 @@
                 const res = await _supabase
                     .from('Solicitudes')
                     .select('id, nombre_usuario, created_at')
+                    .eq('id_dj', currentDjId)
                     .order('id', { ascending: true })
                     .range(rangoInicio, rangoInicio + tamRango - 1);
                 errorTotales = res.error;
@@ -262,28 +445,36 @@
             const { error } = await _supabase
                 .from('Solicitudes')
                 .update({ estado: 'preparate' })
+                .eq('id_dj', currentDjId)
                 .eq('id', id);
 
             if (!error) cargarPedidos();
         }
 
         async function eliminarPedido(id) {
-            if(!confirm('¿Eliminar pedido de la lista?')) return;
+            if (!confirm('¿Eliminar pedido de la lista?')) return;
             const { error } = await _supabase
                 .from('Solicitudes')
                 .update({ estado: 'completada' })
+                .eq('id_dj', currentDjId)
                 .eq('id', id);
 
             if (!error) cargarPedidos();
         }
+        window.avisarPedido = avisarPedido;
+        window.eliminarPedido = eliminarPedido;
 
         _supabase
             .channel('cambios-admin')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'Solicitudes' }, () => {
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'Solicitudes' }, (payload) => {
+                if (payload.new && payload.new.id_dj !== currentDjId) return;
+                if (payload.old && payload.old.id_dj !== currentDjId) return;
                 cargarPedidos();
             })
             .subscribe();
 
+        loadBrandingByDj();
+        setupImporter();
         cargarPedidos();
     </script>
 </body>
