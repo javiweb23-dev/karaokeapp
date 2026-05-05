@@ -123,40 +123,34 @@
         font-weight: bold;
         width: 100%;
     }
-    .admin-tools {
-        margin-bottom: 18px;
-        display: flex;
-        justify-content: flex-end;
-    }
-    .toggle-importer-btn {
-        border: none;
-        border-radius: 8px;
-        padding: 10px 14px;
-        cursor: pointer;
-        font-weight: 700;
-        background: var(--primary-color);
-        color: #fff;
-    }
     .importer-section {
-        display: none;
-        margin-bottom: 18px;
+        margin-top: 18px;
         padding: 14px;
         background: #111;
         border: 1px solid #333;
         border-radius: 10px;
     }
-    .importer-section.visible {
-        display: block;
+    .importer-section h3 {
+        margin: 0 0 10px 0;
+        color: var(--primary-color);
     }
-    .dropzone {
-        border: 2px dashed var(--primary-color);
-        border-radius: 10px;
-        padding: 24px;
-        text-align: center;
-        color: #bbb;
+    #catalogForm {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
     }
-    .dropzone.dragover {
-        background: rgba(255, 255, 255, 0.06);
+    #catalogFile {
+        width: 100%;
+        color: #fff;
+    }
+    #catalogForm button {
+        border: none;
+        border-radius: 8px;
+        padding: 12px;
+        background: var(--primary-color);
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
     }
     #importStatus {
         margin-top: 10px;
@@ -177,43 +171,34 @@
     </div>
 
     <div class="admin-container">
-        <div class="admin-tools">
-            <button id="toggleImporterBtn" class="toggle-importer-btn">IMPORTAR CANCIONES</button>
-        </div>
+        <div id="listaPedidos"></div>
         <div id="importerSection" class="importer-section">
-            <div id="dropzone" class="dropzone">
-                Arrastra un archivo CSV o Excel aqui, o haz clic para seleccionarlo.
-                <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display:none;">
-            </div>
+            <h3>Importar Catalogo</h3>
+            <form id="catalogForm">
+                <input type="file" id="catalogFile" accept=".csv" required>
+                <button type="submit">SUBIR CSV</button>
+            </form>
             <div id="importStatus"></div>
         </div>
-        <div id="listaPedidos"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
         const SUPABASE_URL = 'https://mefrjbmjfdphdqndpzcw.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const DEFAULT_PRIMARY_COLOR = '#ff6600';
+        const adminContainer = document.querySelector('.admin-container');
         const lockScreen = document.getElementById('lockScreen');
         const pinInput = document.getElementById('pinInput');
         const enterPinBtn = document.getElementById('enterPinBtn');
-        const toggleImporterBtn = document.getElementById('toggleImporterBtn');
-        const importerSection = document.getElementById('importerSection');
-        const dropzone = document.getElementById('dropzone');
-        const fileInput = document.getElementById('fileInput');
+        const catalogForm = document.getElementById('catalogForm');
+        const catalogFile = document.getElementById('catalogFile');
         const importStatus = document.getElementById('importStatus');
         const currentDjId = detectDjIdFromUrl();
 
         function detectDjIdFromUrl() {
-            const parts = window.location.pathname.split('/').filter(Boolean);
-            const djIndex = parts.findIndex((part) => part.toLowerCase() === 'dj');
-            if (djIndex !== -1 && parts[djIndex + 1]) {
-                return decodeURIComponent(parts[djIndex + 1]).trim().toLowerCase();
-            }
-            const queryId = new URLSearchParams(window.location.search).get('id_dj');
+            const queryId = new URLSearchParams(window.location.search).get('dj');
             if (queryId) return queryId.trim().toLowerCase();
             return null;
         }
@@ -231,12 +216,17 @@
         async function loadBrandingByDj() {
             if (!currentDjId) return;
             const { data } = await _supabase
-                .from('Djs')
-                .select('color_principal')
+                .from('Usuarios_DJ')
+                .select('logo_url, color_principal')
                 .eq('id_dj', currentDjId)
                 .limit(1)
                 .maybeSingle();
             setBranding(data && data.color_principal ? data.color_principal : DEFAULT_PRIMARY_COLOR);
+        }
+
+        function bloquearPorDjFaltante() {
+            lockScreen.style.display = 'none';
+            adminContainer.innerHTML = '<div style="padding:20px;background:#1a1a1a;border:1px solid #333;border-radius:10px;">Acceso bloqueado: falta el parametro ?dj= en la URL.</div>';
         }
 
         function desbloquearAdmin() {
@@ -273,32 +263,76 @@
             };
         }
 
+        function parseCsv(text) {
+            const rows = [];
+            let current = '';
+            let row = [];
+            let inQuotes = false;
+            for (let i = 0; i < text.length; i++) {
+                const ch = text[i];
+                const next = text[i + 1];
+                if (ch === '"' && inQuotes && next === '"') {
+                    current += '"';
+                    i++;
+                    continue;
+                }
+                if (ch === '"') {
+                    inQuotes = !inQuotes;
+                    continue;
+                }
+                if (ch === ',' && !inQuotes) {
+                    row.push(current);
+                    current = '';
+                    continue;
+                }
+                if ((ch === '\n' || ch === '\r') && !inQuotes) {
+                    if (ch === '\r' && next === '\n') i++;
+                    row.push(current);
+                    if (row.some((x) => String(x).trim() !== '')) rows.push(row);
+                    row = [];
+                    current = '';
+                    continue;
+                }
+                current += ch;
+            }
+            if (current.length || row.length) {
+                row.push(current);
+                if (row.some((x) => String(x).trim() !== '')) rows.push(row);
+            }
+            return rows;
+        }
+
         async function importarCancionesDesdeArchivo(file) {
             if (!currentDjId) {
-                setStatus('No se detecto id_dj en la URL.', true);
+                setStatus('No se detecto dj en la URL.', true);
                 return;
             }
             setStatus('Procesando archivo...', false);
-            let rows = [];
+            let parsedRows = [];
             try {
-                const ext = (file.name.split('.').pop() || '').toLowerCase();
-                if (ext === 'csv') {
-                    const text = await file.text();
-                    const workbook = XLSX.read(text, { type: 'string' });
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-                } else {
-                    const buffer = await file.arrayBuffer();
-                    const workbook = XLSX.read(buffer, { type: 'array' });
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-                }
+                const text = await file.text();
+                parsedRows = parseCsv(text);
             } catch (e) {
                 setStatus('No se pudo leer el archivo.', true);
                 return;
             }
 
-            const songs = rows.map(mapRowToSong).filter(Boolean);
+            if (!parsedRows.length) {
+                setStatus('El CSV esta vacio.', true);
+                return;
+            }
+
+            const headers = parsedRows[0].map((h) => String(h).trim().toLowerCase());
+            const bodyRows = parsedRows.slice(1);
+            const jsonRows = bodyRows.map((r) => {
+                const obj = {};
+                headers.forEach((h, i) => {
+                    obj[h] = r[i] == null ? '' : String(r[i]).trim();
+                });
+                return obj;
+            });
+
+            const songs = jsonRows.map(mapRowToSong).filter(Boolean);
             if (!songs.length) {
                 setStatus('No se encontraron canciones validas.', true);
                 return;
@@ -316,45 +350,45 @@
         }
 
         function setupImporter() {
-            toggleImporterBtn.addEventListener('click', () => {
-                importerSection.classList.toggle('visible');
-            });
-            dropzone.addEventListener('click', () => fileInput.click());
-            ['dragenter', 'dragover'].forEach((eventName) => {
-                dropzone.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropzone.classList.add('dragover');
-                });
-            });
-            ['dragleave', 'drop'].forEach((eventName) => {
-                dropzone.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropzone.classList.remove('dragover');
-                });
-            });
-            dropzone.addEventListener('drop', async (e) => {
-                const files = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files : [];
-                if (files.length) await importarCancionesDesdeArchivo(files[0]);
-            });
-            fileInput.addEventListener('change', async (e) => {
-                const files = e.target.files || [];
-                if (files.length) await importarCancionesDesdeArchivo(files[0]);
-                fileInput.value = '';
+            catalogForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const files = catalogFile.files || [];
+                if (!files.length) {
+                    setStatus('Selecciona un archivo CSV.', true);
+                    return;
+                }
+                await importarCancionesDesdeArchivo(files[0]);
+                catalogFile.value = '';
             });
         }
 
-        if (sessionStorage.getItem('admin_access_validado') === 'true') {
-            desbloquearAdmin();
+        if (!currentDjId) {
+            bloquearPorDjFaltante();
         } else {
-            pinInput.focus();
-        }
+            if (sessionStorage.getItem('admin_access_validado') === 'true') {
+                desbloquearAdmin();
+            } else {
+                pinInput.focus();
+            }
 
-        enterPinBtn.addEventListener('click', validarPin);
-        pinInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') validarPin();
-        });
+            enterPinBtn.addEventListener('click', validarPin);
+            pinInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') validarPin();
+            });
+
+            _supabase
+                .channel('cambios-admin')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'Solicitudes' }, (payload) => {
+                    if (payload.new && payload.new.id_dj !== currentDjId) return;
+                    if (payload.old && payload.old.id_dj !== currentDjId) return;
+                    cargarPedidos();
+                })
+                .subscribe();
+
+            loadBrandingByDj();
+            setupImporter();
+            cargarPedidos();
+        }
 
         async function cargarPedidos() {
             if (!currentDjId) return;
@@ -464,18 +498,6 @@
         window.avisarPedido = avisarPedido;
         window.eliminarPedido = eliminarPedido;
 
-        _supabase
-            .channel('cambios-admin')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'Solicitudes' }, (payload) => {
-                if (payload.new && payload.new.id_dj !== currentDjId) return;
-                if (payload.old && payload.old.id_dj !== currentDjId) return;
-                cargarPedidos();
-            })
-            .subscribe();
-
-        loadBrandingByDj();
-        setupImporter();
-        cargarPedidos();
     </script>
 </body>
 </html>

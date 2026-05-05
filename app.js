@@ -41,12 +41,7 @@ function setupStickyOffsets() {
 }
 
 function detectDjIdFromUrl() {
-    const parts = window.location.pathname.split('/').filter(Boolean);
-    const djIndex = parts.findIndex((part) => part.toLowerCase() === 'dj');
-    if (djIndex !== -1 && parts[djIndex + 1]) {
-        return decodeURIComponent(parts[djIndex + 1]).trim().toLowerCase();
-    }
-    const queryId = new URLSearchParams(window.location.search).get('id_dj');
+    const queryId = new URLSearchParams(window.location.search).get('dj');
     if (queryId) return queryId.trim().toLowerCase();
     return null;
 }
@@ -62,7 +57,7 @@ function setBranding(logoUrl, primaryColor) {
 
 async function loadBrandingByDj() {
     const { data, error } = await _supabase
-        .from('Djs')
+        .from('Usuarios_DJ')
         .select('logo_url, color_principal')
         .eq('id_dj', currentDjId)
         .limit(1)
