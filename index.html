@@ -13,29 +13,16 @@
     <link rel="stylesheet" href="style.css?v=1.1">
 </head>
 <body>
-    <button id="installBtn" class="install-btn" style="display:none;">📲 AÑADIR A INICIO</button>
-    <p id="installNote" class="install-note" style="display:none;">Nota: Esta acción solo crea un acceso directo; la app no se instalará en su teléfono ni tendrá acceso por ningún motivo a su información</p>
     <div class="header">
         <img src="logo.png" alt="Logo" class="logo">
-    </div>
-    <div class="live-status" id="liveStatusBar">
-        <strong>ESTADO EN VIVO</strong>
-        <span id="liveSingerText">🎤 CANTANDO AHORA: ---</span>
+        <button type="button" id="openQrBtn" class="header-qr-btn" aria-label="Compartir código QR">
+            <svg class="header-qr-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect width="5" height="5" x="7" y="7" rx="1"/><rect width="5" height="5" x="14" y="7" rx="1"/><rect width="5" height="5" x="7" y="14" rx="1"/></svg>
+        </button>
     </div>
 
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="BUSCAR POR TÍTULO, ARTISTA O NÚMERO...">
-        <select id="languageFilter">
-            <option value="">TODOS LOS IDIOMAS</option>
-            <option value="español">Español</option>
-            <option value="inglés">Inglés</option>
-        </select>
-        <div class="custom-request">
-            <button onclick="window.open('https://wa.me/584121591072?text=Hola,%20quiero%20pedir%20un%20tema%20fuera%20de%20la%20lista:%20', '_blank')">¿No encuentras tu tema? Pídelo aquí 📲</button>
-        </div>
-        <div class="share-qr-wrap">
-            <button id="openQrBtn" class="share-qr-btn">Compartir QR</button>
-        </div>
+        <button type="button" id="langToggle" data-lang="español">ESPAÑOL</button>
     </div>
     <div id="qrModal" class="qr-modal">
         <div class="qr-modal-content">

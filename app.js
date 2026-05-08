@@ -3,39 +3,91 @@ const SUPABASE_KEY = 'sb_publishable_Xfq71bq0xH8DQ62OHekwCQ_B5dAPsz8';
 const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allSongs = [];
+let currentLang = 'español';
 const ALERT_SOUND_URL = 'https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg';
 let notificationAudio = null;
 let notificationAudioReady = false;
-let deferredInstallPrompt = null;
+const DEFAULT_PRIMARY_COLOR = '#ff6600';
+const DEFAULT_LOGO_URL = 'logo.png';
+let currentDjId = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('click', unlockNotificationAudio, { once: true });
     document.addEventListener('touchstart', unlockNotificationAudio, { once: true });
-    setupInstallAndQr();
+    currentDjId = detectDjIdFromUrl();
+    if (!currentDjId) {
+        document.getElementById('loading').innerText = 'No se detecto el DJ en la URL.';
+        return;
+    }
+    setupShareQr();
     setupStickyOffsets();
-    setTimeout(() => {
-        if (typeof songsDatabase !== 'undefined') {
-            allSongs = [...songsDatabase];
-            applyFilters();
-        } else {
-            document.getElementById('loading').innerText = "Error al leer las canciones. Refresca la página.";
-        }
-        setupEventListeners();
-        startLiveStatusTracking();
-    }, 100);
+    await loadBrandingByDj();
+    await loadSongsByDj();
+    syncLangToggleButton();
+    applyFilters();
+    setupEventListeners();
+    startLiveStatusTracking();
 });
 
 function setupStickyOffsets() {
     const syncOffsets = () => {
         const header = document.querySelector('.header');
-        const liveBar = document.getElementById('liveStatusBar');
         const headerHeight = header ? `${header.offsetHeight}px` : '0px';
-        const liveBarHeight = liveBar ? `${liveBar.offsetHeight}px` : '0px';
         document.documentElement.style.setProperty('--header-height', headerHeight);
-        document.documentElement.style.setProperty('--live-status-height', liveBarHeight);
+        document.documentElement.style.setProperty('--live-status-height', '0px');
     };
     syncOffsets();
     window.addEventListener('resize', syncOffsets);
+}
+
+function detectDjIdFromUrl() {
+    const queryId = new URLSearchParams(window.location.search).get('dj');
+    if (queryId) return queryId.trim().toLowerCase();
+    return null;
+}
+
+function setBranding(logoUrl, primaryColor) {
+    const color = /^#[0-9a-f]{6}$/i.test(String(primaryColor || '')) ? primaryColor : DEFAULT_PRIMARY_COLOR;
+    document.documentElement.style.setProperty('--primary-color', color);
+    const logo = document.querySelector('.logo');
+    if (logo) {
+        logo.src = logoUrl || DEFAULT_LOGO_URL;
+    }
+}
+
+async function loadBrandingByDj() {
+    const { data, error } = await _supabase
+        .from('Usuarios_DJ')
+        .select('logo_url, color_principal')
+        .eq('id_dj', currentDjId)
+        .limit(1)
+        .maybeSingle();
+    if (error || !data) {
+        setBranding(DEFAULT_LOGO_URL, DEFAULT_PRIMARY_COLOR);
+        return;
+    }
+    setBranding(data.logo_url, data.color_principal);
+}
+
+async function loadSongsByDj() {
+    const loading = document.getElementById('loading');
+    const { data, error } = await _supabase
+        .from('Canciones')
+        .select('numero, artista, titulo, genero, idioma')
+        .eq('id_dj', currentDjId)
+        .order('numero', { ascending: true });
+    if (error) {
+        if (loading) loading.innerText = 'Error al leer las canciones. Refresca la pagina.';
+        allSongs = [];
+        return;
+    }
+    allSongs = (data || []).map((song) => ({
+        number: song.numero,
+        artist: song.artista,
+        title: song.titulo,
+        genre: song.genero,
+        language: song.idioma
+    }));
 }
 
 async function updateLiveStatus() {
@@ -44,15 +96,22 @@ async function updateLiveStatus() {
     const { data, error } = await _supabase
         .from('Solicitudes')
         .select('nombre_usuario')
+        .eq('id_dj', currentDjId)
         .eq('estado', 'preparate')
         .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
         .limit(1)
         .maybeSingle();
-    if (error || !data || !data.nombre_usuario) {
+    if (error || !data) {
         liveSingerText.innerText = '🎤 ESPERANDO PRÓXIMO CANTANTE...';
         return;
     }
-    liveSingerText.innerText = `🎤 CANTANDO AHORA: ${data.nombre_usuario}`;
+    const nombre = String(data.nombre_usuario || '').trim();
+    if (!nombre) {
+        liveSingerText.innerText = '🎤 ESPERANDO PRÓXIMO CANTANTE...';
+        return;
+    }
+    liveSingerText.innerText = `🎤 CANTANDO AHORA: ${nombre}`;
 }
 
 function startLiveStatusTracking() {
@@ -62,7 +121,9 @@ function startLiveStatusTracking() {
         .on(
             'postgres_changes',
             { event: '*', schema: 'public', table: 'Solicitudes' },
-            () => {
+            (payload) => {
+                if (payload.new && payload.new.id_dj !== currentDjId) return;
+                if (payload.old && payload.old.id_dj !== currentDjId) return;
                 updateLiveStatus();
             }
         )
@@ -74,56 +135,14 @@ function generateShareQrUrl(size) {
     return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(shareUrl)}`;
 }
 
-function setupInstallAndQr() {
-    const installBtn = document.getElementById('installBtn');
-    const installNote = document.getElementById('installNote');
+function setupShareQr() {
     const openQrBtn = document.getElementById('openQrBtn');
     const closeQrBtn = document.getElementById('closeQrBtn');
     const qrModal = document.getElementById('qrModal');
     const qrModalContent = document.querySelector('.qr-modal-content');
     const qrImage = document.getElementById('qrImage');
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
 
-    if (!installBtn || !installNote || !openQrBtn || !closeQrBtn || !qrModal || !qrModalContent || !qrImage) return;
-
-    const setInstallVisibility = (visible) => {
-        installBtn.style.display = visible ? 'inline-flex' : 'none';
-        installNote.style.display = visible ? 'block' : 'none';
-    };
-
-    if (isStandalone) {
-        setInstallVisibility(false);
-    } else if (isIos) {
-        setInstallVisibility(true);
-    } else {
-        setInstallVisibility(false);
-    }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredInstallPrompt = e;
-        if (!isStandalone) {
-            setInstallVisibility(true);
-        }
-    });
-
-    installBtn.addEventListener('click', async () => {
-        if (deferredInstallPrompt) {
-            deferredInstallPrompt.prompt();
-            await deferredInstallPrompt.userChoice;
-            deferredInstallPrompt = null;
-            setInstallVisibility(false);
-            return;
-        }
-        if (isIos && !isStandalone) {
-            mostrarAlertaElegante('Para guardar, pulsa el botón Compartir y luego Añadir a la pantalla de inicio. Tu información permanece privada siempre');
-        }
-    });
-
-    window.addEventListener('appinstalled', () => {
-        setInstallVisibility(false);
-    });
+    if (!openQrBtn || !closeQrBtn || !qrModal || !qrModalContent || !qrImage) return;
 
     openQrBtn.addEventListener('click', () => {
         const modalWidth = qrModalContent.clientWidth;
@@ -141,6 +160,13 @@ function setupInstallAndQr() {
             qrModal.style.display = 'none';
         }
     });
+}
+
+function normalizeFilterText(str) {
+    return String(str || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
 }
 
 async function unlockNotificationAudio() {
@@ -173,38 +199,41 @@ function playNotificationTwice() {
     setTimeout(playOnce, 900);
 }
 
-function mostrarAlertaElegante(mensaje) {
+function mostrarAlertaElegante(mensaje, tipo) {
+    const accent = tipo === 'error'
+        ? '#dc3545'
+        : getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || DEFAULT_PRIMARY_COLOR;
     const modal = document.createElement('div');
     modal.style.position = 'fixed';
     modal.style.top = '0'; 
     modal.style.left = '0'; 
-    modal.style.width = '100vw'; // Forzamos el ancho exacto de la pantalla
-    modal.style.height = '100vh'; // Forzamos el alto exacto de la pantalla
+    modal.style.width = '100vw';
+    modal.style.height = '100vh';
     modal.style.backgroundColor = 'rgba(0,0,0,0.85)';
     modal.style.display = 'flex'; 
     modal.style.justifyContent = 'center'; 
     modal.style.alignItems = 'center';
     modal.style.zIndex = '9999';
-    modal.style.margin = '0'; // Reseteo de seguridad
-    modal.style.padding = '0'; // Reseteo de seguridad
+    modal.style.margin = '0';
+    modal.style.padding = '0';
     modal.style.boxSizing = 'border-box';
 
     const box = document.createElement('div');
     box.style.backgroundColor = '#1a1a1a';
     box.style.padding = '25px';
     box.style.borderRadius = '12px';
-    box.style.border = '2px solid #ff6600';
+    box.style.border = '2px solid ' + accent;
     box.style.textAlign = 'center';
-    box.style.width = 'calc(100% - 40px)'; // 100% menos 20px de cada lado para que respire
+    box.style.width = 'calc(100% - 40px)';
     box.style.maxWidth = '400px'; 
     box.style.boxSizing = 'border-box'; 
     box.style.color = 'white';
     box.style.boxShadow = '0 10px 25px rgba(255, 102, 0, 0.2)';
-    box.style.margin = '0'; // <--- EL ANTÍDOTO: Evita que tu style.css lo empuje a la derecha
+    box.style.margin = '0';
 
     const title = document.createElement('h3');
     title.innerText = '🎤 Karaoke Latino Dice:';
-    title.style.color = '#ff6600';
+    title.style.color = accent;
     title.style.margin = '0 0 15px 0';
 
     const text = document.createElement('p');
@@ -213,11 +242,11 @@ function mostrarAlertaElegante(mensaje) {
     text.style.fontSize = '16px';
     text.style.lineHeight = '1.5';
     text.style.wordBreak = 'break-word';
-    text.style.margin = '0'; // Reseteo de seguridad
+    text.style.margin = '0';
 
     const btn = document.createElement('button');
     btn.innerText = 'ACEPTAR';
-    btn.style.backgroundColor = '#ff6600';
+    btn.style.backgroundColor = accent;
     btn.style.color = 'white';
     btn.style.border = 'none';
     btn.style.padding = '12px 25px';
@@ -240,14 +269,81 @@ function mostrarAlertaElegante(mensaje) {
 
 async function prepararPedido(number, artist, title) {
     let userName = localStorage.getItem('karaoke_user_name');
+    const songId = number.toString();
+    const userSongsKey = 'karaoke_requested_song_ids';
+    const bloqueoMs = 18000000;
 
     if (!userName || userName.trim() === "") {
         userName = prompt("Tu nombre para la lista:");
         if (userName && userName.trim() !== "") {
-            localStorage.setItem('karaoke_user_name', userName.trim());
+            userName = userName.trim();
+            localStorage.setItem('karaoke_user_name', userName);
         } else {
             return;
         }
+    }
+
+    let requestedSongs = [];
+    try {
+        const raw = JSON.parse(localStorage.getItem(userSongsKey) || '[]');
+        if (Array.isArray(raw)) {
+            requestedSongs = raw
+                .map((item) => {
+                    if (typeof item === 'string') return { id: item, timestamp: 0 };
+                    if (item && typeof item === 'object' && item.id != null) {
+                        return {
+                            id: String(item.id),
+                            timestamp: Number(item.timestamp) || 0
+                        };
+                    }
+                    return null;
+                })
+                .filter(Boolean);
+        }
+    } catch (e) {
+        requestedSongs = [];
+    }
+
+    const ahora = Date.now();
+    const indiceBloqueo = requestedSongs.findIndex((x) => x.id === songId);
+    if (indiceBloqueo !== -1 && ahora - requestedSongs[indiceBloqueo].timestamp < bloqueoMs) {
+        mostrarAlertaElegante('Esta canción ya la pediste hoy, ¡intenta con otra para variar el repertorio!', 'error');
+        return;
+    }
+
+    const { data: globalDuplicate, error: globalDuplicateError } = await _supabase
+        .from('Solicitudes')
+        .select('id')
+        .eq('id_dj', currentDjId)
+        .eq('numero_cancion', songId)
+        .in('estado', ['pendiente', 'preparate'])
+        .limit(1);
+
+    if (globalDuplicateError) {
+        mostrarAlertaElegante("❌ Error: " + globalDuplicateError.message);
+        return;
+    }
+
+    if (globalDuplicate && globalDuplicate.length > 0) {
+        mostrarAlertaElegante('Esta canción ya la pidieron, espera a que la canten para que vuelva a estar disponible, intenta con otra canción', 'error');
+        return;
+    }
+
+    const { count: activePendingCount, error: activePendingError } = await _supabase
+        .from('Solicitudes')
+        .select('id', { count: 'exact', head: true })
+        .eq('id_dj', currentDjId)
+        .eq('nombre_usuario', userName)
+        .in('estado', ['pendiente', 'preparate']);
+
+    if (activePendingError) {
+        mostrarAlertaElegante("❌ Error: " + activePendingError.message);
+        return;
+    }
+
+    if ((activePendingCount || 0) >= 3) {
+        mostrarAlertaElegante('Ya tienes 3 canciones en cola. ¡Canta las que tienes antes de pedir más!', 'error');
+        return;
     }
 
     const { data, error } = await _supabase
@@ -256,7 +352,8 @@ async function prepararPedido(number, artist, title) {
             { 
                 nombre_usuario: userName, 
                 cancion_info: `${artist} - ${title}`, 
-                numero_cancion: number.toString(),
+                numero_cancion: songId,
+                id_dj: currentDjId,
                 estado: 'pendiente' 
             }
         ])
@@ -268,6 +365,14 @@ async function prepararPedido(number, artist, title) {
         mostrarAlertaElegante("✅ ¡Recibido!\n\nTu canción ya está en la lista.\n\nMantén esta página abierta para avisarte cuando te toque cantar.");
 
         if (data && data.length > 0) {
+            const ts = Date.now();
+            const idx = requestedSongs.findIndex((x) => x.id === songId);
+            if (idx !== -1) {
+                requestedSongs[idx] = { id: songId, timestamp: ts };
+            } else {
+                requestedSongs.push({ id: songId, timestamp: ts });
+            }
+            localStorage.setItem(userSongsKey, JSON.stringify(requestedSongs));
             const idUnico = data[0].id;
 
             _supabase
@@ -292,17 +397,29 @@ async function prepararPedido(number, artist, title) {
     }
 }
 
+function manejarClickPedido(button, number, artist, title) {
+    if (!button || button.disabled) return;
+    const originalText = button.innerText;
+    button.disabled = true;
+    button.innerText = 'ENVIANDO...';
+    setTimeout(() => {
+        button.disabled = false;
+        button.innerText = originalText;
+    }, 3000);
+    prepararPedido(number, artist, title);
+}
+
 function renderSongs(songs) {
     const tbody = document.getElementById('songsTableBody');
     const loading = document.getElementById('loading');
     const noResults = document.getElementById('noResults');
-    
+
     if (loading) loading.style.display = 'none';
     if (!tbody) return;
-    
+
     tbody.innerHTML = '';
 
-    if (songs.length === 0) {
+    if (!songs || songs.length === 0) {
         if (noResults) noResults.style.display = 'block';
         return;
     }
@@ -310,41 +427,76 @@ function renderSongs(songs) {
 
     const fragment = document.createDocumentFragment();
 
-    songs.forEach(song => {
+    songs.forEach((song) => {
         const row = document.createElement('tr');
-        
-        const safeArtist = song.artist ? song.artist.replace(/'/g, "\\'") : "Desconocido";
-        const safeTitle = song.title ? song.title.replace(/'/g, "\\'") : "Desconocido";
-        
-        row.innerHTML = `
-            <td><button class="btn-pedir" onclick="prepararPedido('${song.number}', '${safeArtist}', '${safeTitle}')">PEDIR</button></td>
-            <td><strong>${song.artist}</strong></td>
-            <td>${song.title}</td>
-            <td style="color:#888">${song.genre}</td>
-        `;
+        const tdBtn = document.createElement('td');
+        const btn = document.createElement('button');
+        btn.className = 'btn-pedir';
+        btn.textContent = 'PEDIR';
+        btn.addEventListener('click', () => {
+            manejarClickPedido(
+                btn,
+                String(song.number),
+                song.artist != null && song.artist !== '' ? String(song.artist) : 'Desconocido',
+                song.title != null && song.title !== '' ? String(song.title) : 'Desconocido'
+            );
+        });
+        tdBtn.appendChild(btn);
+
+        const tdArt = document.createElement('td');
+        const strong = document.createElement('strong');
+        strong.textContent = song.artist != null && song.artist !== '' ? String(song.artist) : 'Desconocido';
+        tdArt.appendChild(strong);
+
+        const tdTit = document.createElement('td');
+        tdTit.textContent = song.title != null && song.title !== '' ? String(song.title) : 'Desconocido';
+
+        const tdGen = document.createElement('td');
+        tdGen.style.color = '#888';
+        tdGen.textContent = song.genre != null ? String(song.genre) : '';
+
+        row.appendChild(tdBtn);
+        row.appendChild(tdArt);
+        row.appendChild(tdTit);
+        row.appendChild(tdGen);
         fragment.appendChild(row);
     });
-    
+
     tbody.appendChild(fragment);
+}
+
+function syncLangToggleButton() {
+    const langToggle = document.getElementById('langToggle');
+    if (!langToggle) return;
+    langToggle.dataset.lang = currentLang;
+    langToggle.textContent = currentLang === 'español' ? 'ESPAÑOL' : 'INGLÉS';
 }
 
 function applyFilters() {
     const searchInput = document.getElementById('searchInput');
-    const langFilter = document.getElementById('languageFilter');
-    
-    const term = searchInput ? searchInput.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
-    const lang = langFilter ? langFilter.value.toLowerCase() : "";
 
-    const filtered = allSongs.filter(s => {
-        const matchLang = lang === "" || s.language.toLowerCase().includes(lang);
-        const cleanA = s.artist.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const cleanT = s.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        
-        const matchSearch = term === "" || 
-                            cleanA.includes(term) || 
-                            cleanT.includes(term) || 
-                            s.number.toString().includes(term);
-                            
+    const rawTerm = searchInput ? searchInput.value.trim() : '';
+    const term = normalizeFilterText(rawTerm);
+    const langNorm = normalizeFilterText(currentLang);
+
+    const filtered = allSongs.filter((s) => {
+        const songLang = normalizeFilterText(s.language);
+        const matchLang = songLang.includes(langNorm);
+
+        const cleanA = normalizeFilterText(s.artist);
+        const cleanT = normalizeFilterText(s.title);
+        const cleanG = normalizeFilterText(s.genre);
+        const numStr = String(s.number != null ? s.number : '');
+        const cleanNum = normalizeFilterText(numStr);
+
+        const matchSearch =
+            term === '' ||
+            cleanA.includes(term) ||
+            cleanT.includes(term) ||
+            cleanG.includes(term) ||
+            cleanNum.includes(term) ||
+            numStr.includes(rawTerm);
+
         return matchLang && matchSearch;
     });
     renderSongs(filtered);
@@ -352,7 +504,13 @@ function applyFilters() {
 
 function setupEventListeners() {
     const searchInput = document.getElementById('searchInput');
-    const langFilter = document.getElementById('languageFilter');
+    const langToggle = document.getElementById('langToggle');
     if (searchInput) searchInput.addEventListener('input', applyFilters);
-    if (langFilter) langFilter.addEventListener('change', applyFilters);
+    if (langToggle) {
+        langToggle.addEventListener('click', () => {
+            currentLang = currentLang === 'español' ? 'inglés' : 'español';
+            syncLangToggleButton();
+            applyFilters();
+        });
+    }
 }
